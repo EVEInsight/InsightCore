@@ -12,15 +12,17 @@ def get_broker_url():
 
 
 broker_url = get_broker_url()
-include = ["project.tasks.GetMailRedisQ",
-           "project.tasks.ProcessMailRedisQ"]
+include = ["project.tasks.pipeline.GetMailRedisQ",
+           "project.tasks.pipeline.ProcessMail",
+           "project.tasks.pipeline.EnqueueMailToActiveChannels"]
 task_default_queue = "CeleryDefault"
-task_routes = {"project.tasks.GetMailRedisQ.*": {"queue": "GetMailRedisQ"},
-               "project.tasks.ProcessMailRedisQ.*": {"queue": "ProcessMailRedisQ"}
+task_routes = {"project.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"},
+               "project.tasks.pipeline.ProcessMail.*": {"queue": "ProcessMail"},
+               "project.tasks.pipeline.EnqueueMailToActiveChannels.*": {"queue": "EnqueueMailToActiveChannels"},
                }
 beat_schedule = {
     "pull mail redisq": {
-        'task': 'project.tasks.GetMailRedisQ.GetMailRedisQ',
+        'task': 'project.tasks.pipeline.GetMailRedisQ.GetMailRedisQ',
         'schedule': 1
     },
 }

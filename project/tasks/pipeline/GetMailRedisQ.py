@@ -7,7 +7,7 @@ import requests
 import string
 import random
 from redis.exceptions import LockError
-from .ProcessMailRedisQ import ProcessMailRedisQ
+from .ProcessMail import ProcessMail
 
 
 def get_zk_redisq_url() -> str:
@@ -29,12 +29,12 @@ def GetMailRedisQ() -> None:
     """
     rclient = redis.get_redis_client()
     try:
-        with rclient.lock("Lock-GetMailRedisQ", blocking_timeout=1, timeout=900):
+        with rclient.lock("Lock-GetMailRedisQ", blocking_timeout=0.5, timeout=900):
             resp = requests.get(get_zk_redisq_url(), timeout=45, verify=True)
             if resp.status_code == 200:
                 data = resp.json()
                 if data.get("package") is not None:
-                    ProcessMailRedisQ.delay(data)
+                    ProcessMail.delay(data)
                 else:
                     return
             elif resp.status_code == 429:  # error limited
