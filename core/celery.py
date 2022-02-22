@@ -1,8 +1,8 @@
 from celery import Celery
 
 
-app = Celery("InsightTasks")
-app.config_from_object("project.celeryconfig")
+app = Celery("InsightCore")
+app.config_from_object("core.celeryconfig")
 
 
 def main():

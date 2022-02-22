@@ -1,5 +1,5 @@
-from project.celery import app
-from project.models.Mail.Mail import Mail
+from core.celery import app
+from core.models.Mail.Mail import Mail
 
 
 @app.task(bind=True, max_retries=3, default_retry_delay=60 * 1, autoretry_for=(Exception,))

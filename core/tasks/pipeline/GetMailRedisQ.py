@@ -1,8 +1,8 @@
 import os
 import time
 import warnings
-from project.celery import app
-from project.utils import redis
+from core.celery import app
+from core.utils import redis
 import requests
 import string
 import random
