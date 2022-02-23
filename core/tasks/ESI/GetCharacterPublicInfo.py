@@ -29,7 +29,8 @@ def GetCharacterPublicInfo(self, character_id: int) -> dict:
     id = int(character_id)
     redis = GetCharacterPublicInfo.redis
     key = f"GetCharacterPublicInfo-{id}"
-    with redis.lock(f"Lock-{key}", blocking_timeout=15, timeout=900):
+    lock_key = f"Lock-{key}"
+    with redis.lock(lock_key, blocking_timeout=15, timeout=900):
         cached_data = redis.get(key)
         if cached_data:
             return json.loads(cached_data)

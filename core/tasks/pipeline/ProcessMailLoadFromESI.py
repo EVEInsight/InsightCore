@@ -1,16 +1,19 @@
 from core.celery import app
-from core.models.Mail.Mail import Mail
+from core.models.Mail.Mail import Mail, RedisQMail
 from .EnqueueMailToActiveChannels import EnqueueMailToActiveChannels
 from core.tasks.ESI.GetCharacterPublicInfo import get_cached_character_public_info
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=1, autoretry_for=(Exception,))
+@app.task(bind=True, max_retries=10, default_retry_delay=5, autoretry_for=(Exception,))
 def ProcessMailLoadFromESI(self, mail_json) -> None:
-    """
-    covert a mail to model and resolve names
+    """Enqueue all ESI calls to resolve data that isn't present from ZK.
+
+    :param self: Celery self reference required for retries.
+    :param mail_json: json dictionary containing RedisQ ZK data.
+    :type mail_json: dict
     :rtype: None
     """
-    m = Mail.from_json(mail_json)
+    m = Mail.from_json(RedisQMail.from_json(mail_json).to_json())
     if m.victim.character_id:
         public_info = get_cached_character_public_info(m.victim.character_id)
         m.victim.character_name = public_info.get("name", "UnknownName") if public_info else "UnknownName"

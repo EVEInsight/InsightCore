@@ -41,8 +41,12 @@ task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"}
                }
 task_annotations = {"core.tasks.ESI.GetCharacterPublicInfo.GetCharacterPublicInfo": {'rate_limit': '5/s'}}
 beat_schedule = {
-    "pull mail redisq": {
-        'task': 'core.tasks.pipeline.GetMailRedisQ.GetMailRedisQ',
-        'schedule': 1
+    "get-mail-redisq": {
+        "task": "core.tasks.pipeline.GetMailRedisQ.GetMailRedisQ",
+        "schedule": 1,
+        "options": {
+            "ignore_result": True,
+            "expires": 3
+        }
     },
 }
