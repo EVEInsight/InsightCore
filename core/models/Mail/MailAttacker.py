@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(init=False)
 class MailAttacker:
     """
     mail attacker representing data for Insight parsed from ZK json and additional attributes resolved through ESI
@@ -21,42 +21,47 @@ class MailAttacker:
     weapon_type_id: int = None
 
     # unresolved entity names requiring api call
-    alliance_name: str = ""
-    character_name: str = ""
-    corporation_name: str = ""
-    faction_name: str = ""
+    alliance_name: str = None
+    character_name: str = None
+    corporation_name: str = None
+    faction_name: str = None
 
     # unresolved ship info requiring api call
-    ship_type_name: str = ""
+    ship_type_name: str = None
     ship_group_id: int = None
-    ship_group_name: str = ""
+    ship_group_name: str = None
     ship_category_id: int = None
-    ship_category_name: str = ""
+    ship_category_name: str = None
 
     # unresolved ship weapon type info requiring api call
-    weapon_type_name: str = ""
+    weapon_type_name: str = None
     weapon_group_id: int = None
-    weapon_group_name: str = ""
+    weapon_group_name: str = None
     weapon_category_id: int = None
-    weapon_category_name: str = ""
+    weapon_category_name: str = None
+
+    def __init__(self, dct: dict):
+        for k, v in dct.items():
+            setattr(self, k, v)
 
     @classmethod
-    def json_decode_from_zk(cls, dct):
-        return cls(damage_done=dct["damage_done"],
-                   final_blow=dct["final_blow"],
-                   security_status=dct["security_status"],
-                   alliance_id=dct.get("alliance_id"),
-                   character_id=dct.get("character_id"),
-                   corporation_id=dct.get("corporation_id"),
-                   faction_id=dct.get("faction_id"),
-                   ship_type_id=dct.get("ship_type_id"),
-                   weapon_type_id=dct.get("weapon_type_id")
-                   )
+    def from_json(cls, dct):
+        return cls(dct)
+
+
+@dataclass(init=False)
+class RedisQMailAttacker(MailAttacker):
+    def __init__(self, dct: dict):
+        setattr(self, "damage_done",        dct["damage_done"])
+        setattr(self, "final_blow",         dct["final_blow"])
+        setattr(self, "security_status",    dct["security_status"])
+        setattr(self, "alliance_id",        dct.get("alliance_id"))
+        setattr(self, "character_id",       dct.get("character_id"))
+        setattr(self, "corporation_id",     dct.get("corporation_id"))
+        setattr(self, "faction_id",         dct.get("faction_id"))
+        setattr(self, "ship_type_id",       dct.get("ship_type_id"))
+        setattr(self, "weapon_type_id",     dct.get("weapon_type_id"))
 
     @classmethod
-    def json_decode_multi_from_zk(cls, dct):
-        a = []
-        attackers_json = list(dct["package"]["killmail"]["attackers"])
-        for attacker_json in attackers_json:
-            a.append(cls.json_decode_from_zk(attacker_json))
-        return a
+    def from_json(cls, dct):
+        return cls(dct)

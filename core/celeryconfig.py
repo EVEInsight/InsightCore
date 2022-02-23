@@ -2,7 +2,7 @@ import os
 
 
 def get_broker_url():
-    """read env vars for rabbit mq to general connect url"""
+    """read env vars for rabbit mq to generate connect url"""
     user = os.environ["MessageQueueUser"]
     password = os.environ["MessageQueuePassword"]
     host = os.environ["MessageQueueHost"]
@@ -11,15 +11,35 @@ def get_broker_url():
     return f"amqp://{user}:{password}@{host}:{port}/{vhost}"
 
 
+def get_redis_url():
+    """read env vars for redis to generate connect url"""
+    user = os.environ["RedisUser"]
+    password = os.environ["RedisPassword"]
+    host = os.environ["RedisHost"]
+    port = os.environ["RedisPort"]
+    db = os.environ["RedisDb"]
+    return f"redis://{user}:{password}@{host}:{port}/{db}"
+
+
 broker_url = get_broker_url()
+result_backend = get_redis_url()
+task_serializer = 'json'
+result_serializer = 'json'
+accept_content = ['json']
+enable_utc = True
 include = ["core.tasks.pipeline.GetMailRedisQ",
-           "core.tasks.pipeline.ProcessMail",
-           "core.tasks.pipeline.EnqueueMailToActiveChannels"]
+           "core.tasks.pipeline.ProcessMailEnqueueESICalls",
+           "core.tasks.pipeline.ProcessMailLoadFromESI",
+           "core.tasks.pipeline.EnqueueMailToActiveChannels",
+           "core.tasks.ESI.GetCharacterPublicInfo"]
 task_default_queue = "CeleryDefault"
 task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"},
-               "core.tasks.pipeline.ProcessMail.*": {"queue": "ProcessMail"},
+               "core.tasks.pipeline.ProcessMailEnqueueESICalls.*": {"queue": "ProcessMailEnqueueESICalls"},
+               "core.tasks.pipeline.ProcessMailLoadFromESI.*": {"queue": "ProcessMailLoadFromESI"},
                "core.tasks.pipeline.EnqueueMailToActiveChannels.*": {"queue": "EnqueueMailToActiveChannels"},
+               "core.tasks.ESI.GetCharacterPublicInfo.*": {"queue": "GetCharacterPublicInfo"}
                }
+task_annotations = {"core.tasks.ESI.GetCharacterPublicInfo.GetCharacterPublicInfo": {'rate_limit': '5/s'}}
 beat_schedule = {
     "pull mail redisq": {
         'task': 'core.tasks.pipeline.GetMailRedisQ.GetMailRedisQ',

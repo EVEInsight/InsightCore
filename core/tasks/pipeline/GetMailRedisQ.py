@@ -2,12 +2,12 @@ import os
 import time
 import warnings
 from core.celery import app
-from core.utils import redis
+from core.tasks.BaseTasks.BaseTask import BaseTask
 import requests
 import string
 import random
 from redis.exceptions import LockError
-from .ProcessMail import ProcessMail
+from .ProcessMailEnqueueESICalls import ProcessMailEnqueueESICalls
 
 
 def get_zk_redisq_url() -> str:
@@ -21,21 +21,25 @@ def get_zk_redisq_url() -> str:
     return f"https://redisq.zkillboard.com/listen.php?queueID={queue_id}"
 
 
-@app.task
+@app.task(base=BaseTask)
 def GetMailRedisQ() -> None:
     """
     get mail using RedisQ
     :rtype: None
     """
-    rclient = redis.get_redis_client()
+    redis = GetMailRedisQ.redis
     try:
-        with rclient.lock("Lock-GetMailRedisQ", blocking_timeout=0.5, timeout=900):
+        with redis.lock("Lock-GetMailRedisQ", blocking_timeout=0.5, timeout=600):
             resp = requests.get(get_zk_redisq_url(), timeout=45, verify=True)
             if resp.status_code == 200:
                 data = resp.json()
-                if data.get("package") is not None:
-                    ProcessMail.delay(data)
-                else:
+                try:
+                    if data.get("package") is not None:
+                        id = data["package"]["killID"]  # test for id otherwise raise key error
+                        ProcessMailEnqueueESICalls.apply_async(kwargs={"mail_json": data}, ignore_result=True)
+                    else:
+                        return
+                except KeyError:
                     return
             elif resp.status_code == 429:  # error limited
                 warnings.warn("GetMailRedisQ error limited. Are multiple processes from the same IP calling RedisQ?")

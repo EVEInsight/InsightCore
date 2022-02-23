@@ -1,7 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(init=False)
 class MailVictim:
     """
     mail victim representing data for Insight parsed from ZK json and additional attributes resolved through ESI
@@ -20,25 +20,41 @@ class MailVictim:
     position_y: float = None
     position_z: float = None
 
+    # unresolved entity names requiring api call
+    alliance_name: str = None
+    character_name: str = None
+    corporation_name: str = None
+    faction_name: str = None
+
     # unresolved ship info requiring api call
-    ship_type_name: str = ""
+    ship_type_name: str = None
     ship_group_id: int = None
-    ship_group_name: str = ""
+    ship_group_name: str = None
     ship_category_id: int = None
-    ship_category_name: str = ""
+    ship_category_name: str = None
+
+    def __init__(self, dct: dict):
+        for k, v in dct.items():
+            setattr(self, k, v)
 
     @classmethod
-    def json_decode_from_zk(cls, dct):
-        d = dct["package"]["killmail"]["victim"]
-        return cls(damaged_taken=d["damage_taken"],
-                   ship_type_id=d.get("ship_type_id"),
-                   alliance_id=d.get("alliance_id"),
-                   character_id=d.get("character_id"),
-                   corporation_id=d.get("corporation_id"),
-                   faction_id=d.get("faction_id"),
-                   position_x=d.get("position", {}).get("x"),
-                   position_y=d.get("position", {}).get("y"),
-                   position_z=d.get("position", {}).get("z"),
-                   )
+    def from_json(cls, dct):
+        return cls(dct)
 
 
+@dataclass(init=False)
+class RedisQVictim(MailVictim):
+    def __init__(self, dct: dict):
+        setattr(self, "damaged_taken",  dct["damage_taken"])
+        setattr(self, "ship_type_id",   dct.get("ship_type_id"))
+        setattr(self, "alliance_id",    dct.get("alliance_id"))
+        setattr(self, "character_id",   dct.get("character_id"))
+        setattr(self, "corporation_id", dct.get("corporation_id"))
+        setattr(self, "faction_id",     dct.get("faction_id"))
+        setattr(self, "position_x",     dct.get("position", {}).get("x"))
+        setattr(self, "position_y",     dct.get("position", {}).get("y"))
+        setattr(self, "position_z",     dct.get("position", {}).get("z"))
+
+    @classmethod
+    def from_json(cls, dct):
+        return cls(dct)

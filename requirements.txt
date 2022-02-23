@@ -1,3 +1,4 @@
 Celery
+python-dateutil
 redis
 requests

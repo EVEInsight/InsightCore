@@ -8,5 +8,6 @@ def EnqueueMailToActiveChannels(self, mail_json) -> None:
     get active channels and queue up filter tasks with a mail
     :rtype: None
     """
-    print(mail_json)
+    m = Mail.from_json(mail_json)
+    print(f"{m.id} - parsed - {m.parsed_time}")
 
