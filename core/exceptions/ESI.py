@@ -1,0 +1,2 @@
+class NotResolved(Exception):
+    pass
