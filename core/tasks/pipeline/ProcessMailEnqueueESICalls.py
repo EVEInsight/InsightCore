@@ -3,6 +3,7 @@ from core.models.Mail.Mail import RedisQMail
 from core.tasks.ESI.CharacterPublicInfo import CharacterPublicInfo
 from core.tasks.ESI.CorporationInfo import CorporationInfo
 from core.tasks.ESI.AllianceInfo import AllianceInfo
+from core.tasks.ESI.SystemInfo import SystemInfo
 
 
 @app.task(bind=True, max_retries=3, default_retry_delay=60*1, autoretry_for=(Exception,))
@@ -15,6 +16,10 @@ def ProcessMailEnqueueESICalls(self, mail_json: dict) -> None:
     :rtype: None
     """
     m = RedisQMail.from_json(mail_json)
+
+    if m.system_id:
+        SystemInfo.get_async(ignore_result=True, system_id=m.system_id)
+
     if m.victim.character_id:
         CharacterPublicInfo.get_async(ignore_result=True, character_id=m.victim.character_id)
     if m.victim.corporation_id:

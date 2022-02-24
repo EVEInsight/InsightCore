@@ -28,6 +28,7 @@ class Mail:
 
     # unresolved system info requiring api calls
     system_name: str = None
+    system_security_status: float = None
     system_pos_x: float = None
     system_pos_y: float = None
     system_pos_z: float = None

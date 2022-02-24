@@ -5,6 +5,9 @@ from core.tasks.BaseTasks.BaseTask import BaseTask
 from core.tasks.ESI.CharacterPublicInfo import CharacterPublicInfo
 from core.tasks.ESI.CorporationInfo import CorporationInfo
 from core.tasks.ESI.AllianceInfo import AllianceInfo
+from core.tasks.ESI.SystemInfo import SystemInfo
+from core.tasks.ESI.ConstellationInfo import ConstellationInfo
+from core.tasks.ESI.RegionInfo import RegionInfo
 
 
 @app.task(base=BaseTask, bind=True, max_retries=10, default_retry_delay=5, autoretry_for=(Exception,))
@@ -18,6 +21,22 @@ def ProcessMailLoadFromESI(self, mail_json) -> None:
     """
     m = Mail.from_json(RedisQMail.from_json(mail_json).to_json())
     r = ProcessMailLoadFromESI.redis
+
+    if m.system_id:
+        d = SystemInfo.get_cached(r, system_id=m.system_id)
+        m.system_name = d.get("name") if not d.get("error_code") else "UnknownSystem"
+        m.system_security_status = d.get("security_status")
+        m.system_pos_x = d.get("position", {}).get("x")
+        m.system_pos_y = d.get("position", {}).get("y")
+        m.system_pos_z = d.get("position", {}).get("z")
+        m.constellation_id = d.get("constellation_id")
+    if m.constellation_id:
+        d = ConstellationInfo.get_cached(r, constellation_id=m.constellation_id)
+        m.constellation_name = d.get("name") if not d.get("error_code") else "UnknownConstellation"
+        m.region_id = d.get("region_id")
+    if m.region_id:
+        d = RegionInfo.get_cached(r, region_id=m.region_id)
+        m.region_name = d.get("name") if not d.get("error_code") else "UnknownRegion"
 
     if m.victim.character_id:
         d = CharacterPublicInfo.get_cached(r, character_id=m.victim.character_id)

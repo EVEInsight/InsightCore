@@ -33,7 +33,11 @@ include = ["core.tasks.pipeline.GetMailRedisQ",
            "core.tasks.pipeline.EnqueueMailToActiveChannels",
            "core.tasks.ESI.CharacterPublicInfo",
            "core.tasks.ESI.CorporationInfo",
-           "core.tasks.ESI.AllianceInfo"]
+           "core.tasks.ESI.AllianceInfo",
+           "core.tasks.ESI.SystemInfo",
+           "core.tasks.ESI.ConstellationInfo",
+           "core.tasks.ESI.RegionInfo"
+           ]
 task_default_queue = "CeleryDefault"
 task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"},
                "core.tasks.pipeline.ProcessMailEnqueueESICalls.*": {"queue": "ProcessMailEnqueueESICalls"},
@@ -41,7 +45,10 @@ task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"}
                "core.tasks.pipeline.EnqueueMailToActiveChannels.*": {"queue": "EnqueueMailToActiveChannels"},
                "core.tasks.ESI.CharacterPublicInfo.*": {"queue": "GetCharacterPublicInfo"},
                "core.tasks.ESI.CorporationInfo.*": {"queue": "GetCorporationInfo"},
-               "core.tasks.ESI.AllianceInfo.*": {"queue": "GetAllianceInfo"}
+               "core.tasks.ESI.AllianceInfo.*": {"queue": "GetAllianceInfo"},
+               "core.tasks.ESI.SystemInfo.*": {"queue": "GetSystemInfo"},
+               "core.tasks.ESI.ConstellationInfo.*": {"queue": "GetConstellationInfo"},
+               "core.tasks.ESI.RegionInfo.*": {"queue": "GetRegionInfo"}
                }
 # task_annotations = {"core.tasks.ESI.GetCharacterPublicInfo.GetCharacterPublicInfo": {'rate_limit': '1/s'},
 #                     "core.tasks.ESI.GetCharacterPublicInfo.GetCorporationInfo": {'rate_limit': '1/s'},

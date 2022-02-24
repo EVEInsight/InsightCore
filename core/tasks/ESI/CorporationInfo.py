@@ -43,13 +43,4 @@ def GetCorporationInfo(self, **kwargs) -> dict:
     :return: Dictionary containing response from ESI.
     :rtype: dict
     """
-    corporation_id = int(corporation_id)
-    return ApiGetCorporationInfo.get_esi(GetCorporationInfo.redis, corporation_id=corporation_id)
-
-
-
-
-
-
-
-
+    return CorporationInfo._request_esi(GetCorporationInfo.redis, **kwargs)

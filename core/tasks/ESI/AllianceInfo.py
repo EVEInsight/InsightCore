@@ -44,11 +44,3 @@ def GetAllianceInfo(self, **kwargs) -> dict:
     :rtype: dict
     """
     return AllianceInfo._request_esi(GetAllianceInfo.redis, **kwargs)
-
-
-
-
-
-
-
-
