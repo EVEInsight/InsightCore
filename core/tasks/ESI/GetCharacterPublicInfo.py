@@ -4,6 +4,8 @@ from .ESIResqust import ESIRequest
 
 
 class ApiGetCharacterPublicInfo(ESIRequest):
+    """/characters/{character_id}/
+    """
     @classmethod
     def ttl_success(cls):
         return 86400
@@ -26,7 +28,7 @@ def GetCharacterPublicInfo(self, character_id: int) -> dict:
     """get public character info
 
     :param self: self reference for celery retries
-    :param character_id: character id to look up
+    :param character_id: id to look up
     :return: Dictionary containing response from ESI.
     :rtype: dict
     """

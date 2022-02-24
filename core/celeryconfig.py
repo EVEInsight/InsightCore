@@ -31,15 +31,21 @@ include = ["core.tasks.pipeline.GetMailRedisQ",
            "core.tasks.pipeline.ProcessMailEnqueueESICalls",
            "core.tasks.pipeline.ProcessMailLoadFromESI",
            "core.tasks.pipeline.EnqueueMailToActiveChannels",
-           "core.tasks.ESI.GetCharacterPublicInfo"]
+           "core.tasks.ESI.GetCharacterPublicInfo",
+           "core.tasks.ESI.GetCorporationInfo",
+           "core.tasks.ESI.GetAllianceInfo"]
 task_default_queue = "CeleryDefault"
 task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"},
                "core.tasks.pipeline.ProcessMailEnqueueESICalls.*": {"queue": "ProcessMailEnqueueESICalls"},
                "core.tasks.pipeline.ProcessMailLoadFromESI.*": {"queue": "ProcessMailLoadFromESI"},
                "core.tasks.pipeline.EnqueueMailToActiveChannels.*": {"queue": "EnqueueMailToActiveChannels"},
-               "core.tasks.ESI.GetCharacterPublicInfo.*": {"queue": "GetCharacterPublicInfo"}
+               "core.tasks.ESI.GetCharacterPublicInfo.*": {"queue": "GetCharacterPublicInfo"},
+               "core.tasks.ESI.GetCorporationInfo.*": {"queue": "GetCorporationInfo"},
+               "core.tasks.ESI.GetAllianceInfo.*": {"queue": "GetAllianceInfo"}
                }
-task_annotations = {"core.tasks.ESI.GetCharacterPublicInfo.GetCharacterPublicInfo": {'rate_limit': '5/s'}}
+# task_annotations = {"core.tasks.ESI.GetCharacterPublicInfo.GetCharacterPublicInfo": {'rate_limit': '1/s'},
+#                     "core.tasks.ESI.GetCharacterPublicInfo.GetCorporationInfo": {'rate_limit': '1/s'},
+#                     "core.tasks.ESI.GetCharacterPublicInfo.GetAllianceInfo": {'rate_limit': '1/s'}}
 beat_schedule = {
     "get-mail-redisq": {
         "task": "core.tasks.pipeline.GetMailRedisQ.GetMailRedisQ",
