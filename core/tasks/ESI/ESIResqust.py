@@ -1,8 +1,12 @@
 from redis import Redis
 from core.exceptions.ESI import NotResolved, InputValidationError
+from core.exceptions.utils import ErrorLimitExceeded
+from core.utils.ErrorLimiter import ESIErrorLimiter
 from celery.result import AsyncResult
 import json
 import requests
+from datetime import datetime
+from dateutil.parser import parse as dtparse
 
 
 class ESIRequest(object):
@@ -150,6 +154,7 @@ class ESIRequest(object):
             If ESI returned a 404 error the response will be in the form
             {"error": error_message, "error_code": 404}
         :rtype: dict
+        :raises core.exceptions.utils.ErrorLimitExceeded: If the remaining error limit is below the allowed threshold.
         """
         lookup_key = cls.get_key(**kwargs)
         lock_key = cls.get_lock_key(**kwargs)
@@ -158,21 +163,41 @@ class ESIRequest(object):
                 return cls.get_cached(redis=redis, **kwargs)
             except NotResolved:
                 pass
+            ESIErrorLimiter.check_limit(redis)
+            rheaders = {}
             try:
                 resp = requests.get(cls.request_url(**kwargs), timeout=5, verify=True)
+                rheaders = resp.headers
                 if resp.status_code == 200:
                     d = resp.json()
                     redis.set(name=lookup_key, value=json.dumps(d), ex=cls.ttl_success())
                     cls._hook_after_esi_success(d)
+                    ESIErrorLimiter.update_limit(redis,
+                                                 error_limit_remain=int(rheaders["x-esi-error-limit-remain"]),
+                                                 error_limit_reset=int(rheaders["x-esi-error-limit-reset"]),
+                                                 time=dtparse(rheaders["date"], ignoretz=True)
+                                                 )
                     return json.loads(redis.get(lookup_key))
                 elif resp.status_code == 404:
                     d = {"error": str(resp.json().get("error")), "error_code": 404}
                     redis.set(name=lookup_key, value=json.dumps(d), ex=cls.ttl_404())
+                    ESIErrorLimiter.update_limit(redis,
+                                                 error_limit_remain=int(rheaders["x-esi-error-limit-remain"]),
+                                                 error_limit_reset=int(rheaders["x-esi-error-limit-reset"]),
+                                                 time=dtparse(rheaders["date"], ignoretz=True)
+                                                 )
                     return json.loads(redis.get(lookup_key))
                 else:
                     resp.raise_for_status()
-                    # todo
-            except requests.exceptions.Timeout as ex:  # todo something
+            except Exception as ex:
+                try:
+                    ESIErrorLimiter.update_limit(redis,
+                                                 error_limit_remain=int(rheaders["x-esi-error-limit-remain"]),
+                                                 error_limit_reset=int(rheaders["x-esi-error-limit-reset"]),
+                                                 time=dtparse(rheaders["date"], ignoretz=True)
+                                                 )
+                except KeyError:
+                    ESIErrorLimiter.decrement_limit(redis, datetime.utcnow())
                 raise ex
 
     @classmethod
