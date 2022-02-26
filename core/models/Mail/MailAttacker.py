@@ -21,24 +21,24 @@ class MailAttacker:
     weapon_type_id: int = None
 
     # unresolved entity names requiring api call
-    alliance_name: str = None
-    character_name: str = None
-    corporation_name: str = None
-    faction_name: str = None
+    _alliance_name: str = None
+    _character_name: str = None
+    _corporation_name: str = None
+    _faction_name: str = None
 
     # unresolved ship info requiring api call
-    ship_type_name: str = None
-    ship_group_id: int = None
-    ship_group_name: str = None
-    ship_category_id: int = None
-    ship_category_name: str = None
+    _ship_type_name: str = None
+    _ship_group_id: int = None
+    _ship_group_name: str = None
+    _ship_category_id: int = None
+    _ship_category_name: str = None
 
     # unresolved ship weapon type info requiring api call
-    weapon_type_name: str = None
-    weapon_group_id: int = None
-    weapon_group_name: str = None
-    weapon_category_id: int = None
-    weapon_category_name: str = None
+    _weapon_type_name: str = None
+    _weapon_group_id: int = None
+    _weapon_group_name: str = None
+    _weapon_category_id: int = None
+    _weapon_category_name: str = None
 
     def __init__(self, dct: dict):
         for k, v in dct.items():
@@ -46,7 +46,117 @@ class MailAttacker:
 
     @classmethod
     def from_json(cls, dct):
+        """Returns an instance of class from a json dictionary
+
+        :param dct: Dictionary returned from the to_json() method
+        :return: An instance of the class
+        :rtype: MailAttacker
+        """
         return cls(dct)
+
+    @property
+    def alliance_name(self):
+        return self._alliance_name
+
+    @alliance_name.setter
+    def alliance_name(self, esi: dict):
+        self._alliance_name = esi["name"]
+
+    @property
+    def character_name(self):
+        return self._character_name
+
+    @character_name.setter
+    def character_name(self, esi: dict):
+        self._character_name = esi["name"]
+
+    @property
+    def corporation_name(self):
+        return self._corporation_name
+
+    @corporation_name.setter
+    def corporation_name(self, esi: dict):
+        self._corporation_name = esi["name"]
+
+    @property
+    def ship_type_name(self):
+        return self._ship_type_name
+
+    @ship_type_name.setter
+    def ship_type_name(self, esi: dict):
+        self._ship_type_name = esi["name"]
+
+    @property
+    def ship_group_id(self):
+        return self._ship_group_id
+
+    @ship_group_id.setter
+    def ship_group_id(self, esi: dict):
+        self._ship_group_id = esi["group_id"]
+
+    @property
+    def ship_group_name(self):
+        return self._ship_group_name
+
+    @ship_group_name.setter
+    def ship_group_name(self, esi: dict):
+        self._ship_group_name = esi["name"]
+
+    @property
+    def ship_category_id(self):
+        return self._ship_category_id
+
+    @ship_category_id.setter
+    def ship_category_id(self, esi: dict):
+        self._ship_category_id = esi["category_id"]
+
+    @property
+    def ship_category_name(self):
+        return self._ship_category_name
+
+    @ship_category_name.setter
+    def ship_category_name(self, esi: dict):
+        self._ship_category_name = esi["name"]
+
+    @property
+    def weapon_type_name(self):
+        return self._weapon_type_name
+
+    @weapon_type_name.setter
+    def weapon_type_name(self, esi: dict):
+        self._weapon_type_name = esi["name"]
+
+    @property
+    def weapon_group_id(self):
+        return self._weapon_group_id
+
+    @weapon_group_id.setter
+    def weapon_group_id(self, esi: dict):
+        self._weapon_group_id = esi["group_id"]
+
+    @property
+    def weapon_group_name(self):
+        return self._weapon_group_name
+
+    @weapon_group_name.setter
+    def weapon_group_name(self, esi: dict):
+        self._weapon_group_name = esi["name"]
+
+    @property
+    def weapon_category_id(self):
+        return self._weapon_category_id
+
+    @weapon_category_id.setter
+    def weapon_category_id(self, esi: dict):
+        self._weapon_category_id = esi["category_id"]
+
+    @property
+    def weapon_category_name(self):
+        return self._weapon_category_name
+
+    @weapon_category_name.setter
+    def weapon_category_name(self, esi: dict):
+        self._weapon_category_name = esi["name"]
 
 
 @dataclass(init=False)

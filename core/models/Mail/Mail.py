@@ -27,18 +27,15 @@ class Mail:
     attackers: list[MailAttacker] = field(default_factory=list)
 
     # unresolved system info requiring api calls
-    system_name: str = None
-    system_security_status: float = None
-    system_pos_x: float = None
-    system_pos_y: float = None
-    system_pos_z: float = None
-    constellation_id: int = None
-    constellation_name: str = None
-    region_id: int = None
-    region_name: str = None
-
-    # additional vars parsed
-    final_blow_attacker: MailAttacker = None
+    _system_name: str = None
+    _system_security_status: float = None
+    _system_pos_x: float = None
+    _system_pos_y: float = None
+    _system_pos_z: float = None
+    _constellation_id: int = None
+    _constellation_name: str = None
+    _region_id: int = None
+    _region_name: str = None
 
     # utility vars
     parsed_time: datetime = None
@@ -46,15 +43,13 @@ class Mail:
     def __init__(self, dct: dict):
         for k, v in dct.items():
             if k == "attackers":
+                self.attackers = []
                 for a in v:
-                    self.attackers = []
                     attacker = MailAttacker.from_json(a)
                     self.attackers.append(attacker)
-                    if attacker.final_blow:
-                        self.final_blow_attacker = attacker
             elif k == "victim":
                 setattr(self, k, MailVictim.from_json(v))
-            elif k == "final_blow_attacker":
+            elif k == "_final_blow_attacker":
                 continue
             elif k == "killmail_time" or k == "parsed_time":
                 setattr(self, k, dtparse(v))
@@ -63,14 +58,198 @@ class Mail:
         self.parsed_time = datetime.utcnow()
 
     def to_json(self) -> dict:
+        """Converts the class object to a json compatible dictionary
+
+        :return: The json compatible dictionary of this object
+        """
         d = asdict(self)
         d["killmail_time"] = str(d["killmail_time"])
         d["parsed_time"] = str(d["parsed_time"])
         return d
 
     @classmethod
-    def from_json(cls, dct):
+    def from_json(cls, dct: dict):
+        """Returns an instance of class from a json dictionary
+
+        :param dct: Dictionary returned from the to_json() method
+        :return: An instance of the class
+        :rtype: Mail
+        """
         return cls(dct)
+
+    @property
+    def system_name(self):
+        """Set through ESI system info call.
+
+        :return: System name - required
+        :rtype: str
+        """
+        return self._system_name
+
+    @system_name.setter
+    def system_name(self, esi: dict):
+        """Set through ESI system info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._system_name = esi["name"]
+
+    @property
+    def system_security_status(self):
+        """Set through ESI system info call.
+
+        :return: System security status - required
+        :rtype: float
+        """
+        return self._system_security_status
+
+    @system_security_status.setter
+    def system_security_status(self, esi: dict):
+        """Set through ESI system info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._system_security_status = esi["security_status"]
+
+    @property
+    def system_pos_x(self):
+        """Set through ESI system info call.
+
+        :return: System X position in the universe - required
+        :rtype: float
+        """
+        return self._system_pos_x
+
+    @system_pos_x.setter
+    def system_pos_x(self, esi: dict):
+        """Set through ESI system info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._system_pos_x = esi["position"]["x"]
+
+    @property
+    def system_pos_y(self):
+        """Set through ESI system info call.
+
+        :return: System Y position in the universe - required
+        :rtype: float
+        """
+        return self._system_pos_y
+
+    @system_pos_y.setter
+    def system_pos_y(self, esi: dict):
+        """Set through ESI system info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._system_pos_y = esi["position"]["y"]
+
+    @property
+    def system_pos_z(self):
+        """Set through ESI system info call.
+
+        :return: System Z position in the universe - required
+        :rtype: float
+        """
+        return self._system_pos_z
+
+    @system_pos_z.setter
+    def system_pos_z(self, esi: dict):
+        """Set through ESI system info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._system_pos_z = esi["position"]["z"]
+
+    @property
+    def constellation_id(self):
+        """Set through ESI system info call.
+
+        :return: Constellation ID - required
+        :rtype: int
+        """
+        return self._constellation_id
+
+    @constellation_id.setter
+    def constellation_id(self, esi: dict):
+        """Set through ESI system info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._constellation_id = esi["constellation_id"]
+
+    @property
+    def constellation_name(self):
+        """Set through ESI constellation info call.
+
+        :return: Constellation name - required
+        :rtype: str
+        """
+        return self._constellation_name
+
+    @constellation_name.setter
+    def constellation_name(self, esi: dict):
+        """Set through ESI constellation info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._constellation_name = esi["name"]
+
+    @property
+    def region_id(self):
+        """Set through ESI constellation info call.
+
+        :return: Region ID - required
+        :rtype: int
+        """
+        return self._region_id
+
+    @region_id.setter
+    def region_id(self, esi: dict):
+        """Set through ESI constellation info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._region_id = esi["region_id"]
+
+    @property
+    def region_name(self):
+        """Set through ESI region info call.
+
+        :return: Region name - required
+        :rtype: str
+        """
+        return self._region_name
+
+    @region_name.setter
+    def region_name(self, esi: dict):
+        """Set through ESI region info call.
+
+        :param esi: ESI response dictionary. ESI is required to return this value.
+        """
+        self._region_name = esi["name"]
+
+    @property
+    def final_blow_attacker(self):
+        """Dynamically gets the final_blow object
+
+        :return: Attacker object with final_blow
+        :rtype: MailAttacker or None
+        """
+        for a in self.attackers:
+            if a.final_blow:
+                return a
+        return None
+
+    @property
+    def involved(self):
+        """Dynamically get the involved count
+
+        :return: Number of involved attackers
+        :rtype: int
+        """
+        return len(self.attackers)
 
 
 @dataclass(init=False)
@@ -96,8 +275,6 @@ class RedisQMail(Mail):
         for a in d["killmail"]["attackers"]:
             attacker = RedisQMailAttacker.from_json(a)
             self.attackers.append(attacker)
-            if attacker.final_blow:
-                self.final_blow_attacker = attacker
 
         self.parsed_time = datetime.utcnow()
 
