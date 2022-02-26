@@ -5,6 +5,7 @@ from core.tasks.BaseTasks.BaseTask import BaseTask
 from core.tasks.ESI.CharacterPublicInfo import CharacterPublicInfo
 from core.tasks.ESI.CorporationInfo import CorporationInfo
 from core.tasks.ESI.AllianceInfo import AllianceInfo
+from core.tasks.ESI.FactionsList import FactionsList
 from core.tasks.ESI.SystemInfo import SystemInfo
 from core.tasks.ESI.ConstellationInfo import ConstellationInfo
 from core.tasks.ESI.RegionInfo import RegionInfo
@@ -15,11 +16,13 @@ from core.tasks.ESI.CategoryInfo import CategoryInfo
 
 @app.task(base=BaseTask, bind=True, max_retries=10, default_retry_delay=5, autoretry_for=(Exception,))
 def ProcessMailLoadFromESI(self, mail_json) -> None:
-    """Enqueue all ESI calls to resolve data that isn't present from ZK.
+    """Update mail object will all ESI resolved data.
+    Raises NotResolved exceptions to trigger retries if the data hasn't been loaded from ESI yet.
 
     :param self: Celery self reference required for retries.
     :param mail_json: json dictionary containing RedisQ ZK data.
     :type mail_json: dict
+    :raises core.exceptions.ESI.NotResolved: If the requested data has not yet been resolved by ESI.
     :rtype: None
     """
     m = Mail.from_json(RedisQMail.from_json(mail_json).to_json())
@@ -49,6 +52,9 @@ def ProcessMailLoadFromESI(self, mail_json) -> None:
         if m.victim.alliance_id:
             esi = AllianceInfo.get_cached(r, alliance_id=m.victim.alliance_id)
             m.victim.alliance_name = esi
+        if m.victim.faction_id:
+            esi = FactionsList.get_cached(r)
+            m.victim.faction_name = esi
         if m.victim.ship_type_id:
             esi = TypeInfo.get_cached(r, type_id=m.victim.ship_type_id)
             m.victim.ship_type_name = esi
@@ -69,6 +75,9 @@ def ProcessMailLoadFromESI(self, mail_json) -> None:
         if a.alliance_id:
             esi = AllianceInfo.get_cached(r, alliance_id=a.alliance_id)
             a.alliance_name = esi
+        if a.faction_id:
+            esi = FactionsList.get_cached(r)
+            a.faction_name = esi
         if a.ship_type_id:
             esi = TypeInfo.get_cached(r, type_id=a.ship_type_id)
             a.ship_type_name = esi

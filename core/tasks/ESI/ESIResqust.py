@@ -79,15 +79,16 @@ class ESIRequest(object):
         return f"{cls.base_url()}{cls.route(**kwargs)}/?datasource=tranquility"
 
     @classmethod
-    def get_cached(cls, redis: Redis, **kwargs) -> dict:
+    def get_cached(cls, redis: Redis, **kwargs):
         """Get the cached response from ESI immediately without invoking an ESI call.
 
         :param redis: The redis client
         :param kwargs: ESI request parameters
-        :return: Dictionary containing cached response from ESI.
-            If ESI returned a 404 error the response will be in the form
+        :return: Dictionary or list containing cached response from ESI.
+            If ESI returned a 404 error dictionary the response will be in the form
             {"error": error_message, "error_code": 404}
-        :rtype: dict
+            Only /universe/factions/ returns a list, all else return dictionaries.
+        :rtype: dict or list
         :raises core.exceptions.ESI.NotResolved: If the request has not yet been resolved by ESI.
         :raises core.exceptions.ESI.InputValidationError: If an input ESI parameter contains
             invalid syntax or is a known invalid ID
@@ -126,22 +127,23 @@ class ESIRequest(object):
         return cls._get_celery_async_result(ignore_result=ignore_result, **kwargs)
 
     @classmethod
-    def get_sync(cls, timeout: float = 10, **kwargs) -> dict:
+    def get_sync(cls, timeout: float = 10, **kwargs):
         """Call a task and block until the result is set.
 
         :param timeout: The time in seconds to block waiting for the task to complete.
         Setting this to None blocks forever.
         :type timeout: float
         :param kwargs: ESI request parameters
-        :return: Dictionary containing response from ESI.
-            If ESI returned a 404 error the response will be in the form
+        :return: Dictionary or list containing response from ESI.
+            If ESI returned a 404 dictionary error the response will be in the form
             {"error": error_message, "error_code": 404}
-        :rtype: dict
+            Only /universe/factions/ returns a list, all else return dictionaries.
+        :rtype: dict or list
         """
         return cls.get_async(ignore_result=False, **kwargs).get(timeout=timeout, propagate=True)
 
     @classmethod
-    def _request_esi(cls, redis: Redis, **kwargs) -> dict:
+    def _request_esi(cls, redis: Redis, **kwargs):
         """Gets the ESI cached response.
         If the response is not yet cached or hasn't been resolved then perform an ESI call caching the new response.
 
@@ -153,7 +155,10 @@ class ESIRequest(object):
         :return: Dictionary containing response from ESI.
             If ESI returned a 404 error the response will be in the form
             {"error": error_message, "error_code": 404}
-        :rtype: dict
+            If the response doesn't require request inputs then list is usually returned (list factions, systems, etc).
+            If the response requires inputs a dictionary is usually returned.
+            Only /universe/factions/ returns a list, all else return dictionaries.
+        :rtype: dict or list
         :raises core.exceptions.utils.ErrorLimitExceeded: If the remaining error limit is below the allowed threshold.
         """
         lookup_key = cls.get_key(**kwargs)
@@ -201,12 +206,12 @@ class ESIRequest(object):
                 raise ex
 
     @classmethod
-    def _hook_after_esi_success(cls, esi_response: dict) -> None:
+    def _hook_after_esi_success(cls, esi_response) -> None:
         """Code to run with esi_response data after there was a successful 200 response from ESI.
         For example: use this function to optionally queue up additional ESI calls for ids returned.
 
-        :param esi_response: ESI response body from an API call
-        :type esi_response: dict
+        :param esi_response: ESI response from an API call
+        :type esi_response: dict or list
         :rtype: None
         """
         return

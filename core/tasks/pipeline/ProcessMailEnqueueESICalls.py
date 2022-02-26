@@ -5,6 +5,7 @@ from core.tasks.ESI.CorporationInfo import CorporationInfo
 from core.tasks.ESI.AllianceInfo import AllianceInfo
 from core.tasks.ESI.SystemInfo import SystemInfo
 from core.tasks.ESI.TypeInfo import TypeInfo
+from core.tasks.ESI.FactionsList import FactionsList
 
 
 @app.task(bind=True, max_retries=3, default_retry_delay=60*1, autoretry_for=(Exception,))
@@ -28,6 +29,8 @@ def ProcessMailEnqueueESICalls(self, mail_json: dict) -> None:
             CorporationInfo.get_async(ignore_result=True, corporation_id=m.victim.corporation_id)
         if m.victim.alliance_id:
             AllianceInfo.get_async(ignore_result=True, alliance_id=m.victim.alliance_id)
+        if m.victim.faction_id:
+            FactionsList.get_async(ignore_result=True)
         if m.victim.ship_type_id:
             TypeInfo.get_async(ignore_result=True, type_id=m.victim.ship_type_id)
 
@@ -38,6 +41,8 @@ def ProcessMailEnqueueESICalls(self, mail_json: dict) -> None:
             CorporationInfo.get_async(ignore_result=True, corporation_id=a.corporation_id)
         if a.alliance_id:
             AllianceInfo.get_async(ignore_result=True, alliance_id=a.alliance_id)
+        if a.faction_id:
+            FactionsList.get_async(ignore_result=True)
         if a.ship_type_id:
             TypeInfo.get_async(ignore_result=True, type_id=a.ship_type_id)
         if a.weapon_type_id:

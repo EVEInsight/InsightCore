@@ -48,6 +48,23 @@ class MailVictim:
         return cls(dct)
 
     @property
+    def affiliation_name(self):
+        """Returns the name of the largest affiliation the entity belongs to.
+        Ordering - whichever id is set first: faction > alliance > corporation
+
+        :return: Name of the largest affiliation the entity belongs to or None if no affiliation.
+        :rtype: str or None
+        """
+        if self.faction_id:
+            return self.faction_name
+        elif self.alliance_id:
+            return self.alliance_name
+        elif self.corporation_id:
+            return self.corporation_name
+        else:
+            return None
+
+    @property
     def alliance_name(self):
         return self._alliance_name
 
@@ -70,6 +87,26 @@ class MailVictim:
     @corporation_name.setter
     def corporation_name(self, esi: dict):
         self._corporation_name = esi["name"]
+
+    @property
+    def faction_name(self):
+        """Set through ESI factions list call.
+
+        :return: Faction name - optional
+        :rtype: str or None
+        """
+        return self._faction_name
+
+    @faction_name.setter
+    def faction_name(self, esi: list):
+        """Set through ESI factions list call.
+
+        :param esi: ESI response list. ESI is required to return this value.
+        """
+        if self.faction_id:
+            for f in esi:
+                if f.get("faction_id") == self.faction_id:
+                    self._faction_name = f.get("name")
 
     @property
     def ship_type_name(self):
