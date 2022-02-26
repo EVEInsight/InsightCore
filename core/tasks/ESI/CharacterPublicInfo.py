@@ -7,12 +7,8 @@ from core.exceptions.ESI import InputValidationError
 
 class CharacterPublicInfo(ESIRequest):
     @classmethod
-    def ttl_success(cls):
-        return 86400
-
-    @classmethod
     def ttl_404(cls) -> int:
-        return 86400
+        return 86400  # current esi x-cached-seconds header
 
     @classmethod
     def get_key(cls, character_id: int):

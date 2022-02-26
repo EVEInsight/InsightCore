@@ -7,14 +7,6 @@ from core.exceptions.ESI import InputValidationError
 
 class CategoryInfo(ESIRequest):
     @classmethod
-    def ttl_success(cls):
-        return 86400
-
-    @classmethod
-    def ttl_404(cls) -> int:
-        return 86400
-
-    @classmethod
     def get_key(cls, category_id: int):
         return f"CategoryInfo-{category_id}"
 

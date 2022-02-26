@@ -6,14 +6,6 @@ from celery.result import AsyncResult
 
 class FactionsList(ESIRequest):
     @classmethod
-    def ttl_success(cls):
-        return 3600
-
-    @classmethod
-    def ttl_404(cls) -> int:
-        return 3600
-
-    @classmethod
     def get_key(cls):
         return f"FactionsList"
 

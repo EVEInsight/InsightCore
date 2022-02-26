@@ -11,22 +11,13 @@ from dateutil.parser import parse as dtparse
 
 class ESIRequest(object):
     @classmethod
-    def ttl_success(cls) -> int:
-        """Returns the redis TTL for caching a successful ESI response
-
-        :return: Seconds to cache a successful ESI response in Redis
-        :rtype: int
-        """
-        raise NotImplementedError
-
-    @classmethod
     def ttl_404(cls) -> int:
         """Returns the redis TTL for caching ESI responses that errored with a 404 - not found
 
         :return: Seconds to cache a 404 not found ESI response in Redis
         :rtype: int
         """
-        return cls.ttl_success()
+        return 86400
 
     @classmethod
     def get_key(cls, **kwargs) -> str:
@@ -175,7 +166,11 @@ class ESIRequest(object):
                 rheaders = resp.headers
                 if resp.status_code == 200:
                     d = resp.json()
-                    redis.set(name=lookup_key, value=json.dumps(d), ex=cls.ttl_success())
+                    ttl_expire = int(max(
+                        (dtparse(rheaders["expires"], ignoretz=True) - datetime.utcnow()).total_seconds(),
+                        1)
+                    )
+                    redis.set(name=lookup_key, value=json.dumps(d), ex=ttl_expire)
                     cls._hook_after_esi_success(d)
                     ESIErrorLimiter.update_limit(redis,
                                                  error_limit_remain=int(rheaders["x-esi-error-limit-remain"]),

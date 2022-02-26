@@ -8,14 +8,6 @@ from .GroupInfo import GroupInfo
 
 class TypeInfo(ESIRequest):
     @classmethod
-    def ttl_success(cls):
-        return 86400
-
-    @classmethod
-    def ttl_404(cls) -> int:
-        return 86400
-
-    @classmethod
     def get_key(cls, type_id: int):
         return f"TypeInfo-{type_id}"
 
