@@ -9,6 +9,7 @@ import random
 from redis.exceptions import LockError
 from .ProcessMailEnqueueESICalls import ProcessMailEnqueueESICalls
 from .ProcessMailLoadFromESI import ProcessMailLoadFromESI
+from core.utils.RequestHeaders import RequestHeaders
 
 
 def get_zk_redisq_url() -> str:
@@ -38,7 +39,7 @@ def GetMailRedisQ() -> None:
     try:
         with redis.lock("Lock-GetMailRedisQ", blocking_timeout=1, timeout=600):
             try:
-                resp = requests.get(get_zk_redisq_url(), timeout=15, verify=True)
+                resp = requests.get(get_zk_redisq_url(), headers=RequestHeaders.get_headers(), timeout=15, verify=True)
                 if resp.status_code == 200:
                     data = resp.json()
                     try:
@@ -55,6 +56,8 @@ def GetMailRedisQ() -> None:
                     warnings.warn("RedisQ error limited. Are multiple processes from the same IP calling RedisQ?")
                     time.sleep(600)
                 elif 400 <= resp.status_code < 500:
+                    print(f"GetMailRedisQ.\nGot error f{resp.status_code}"
+                          f"\n\nHeaders: {resp.headers}\n\nBody:{resp.text}")
                     time.sleep(300)
                 else:
                     time.sleep(120)

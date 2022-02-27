@@ -7,6 +7,7 @@ import json
 import requests
 from datetime import datetime
 from dateutil.parser import parse as dtparse
+from core.utils.RequestHeaders import RequestHeaders
 
 
 class ESIRequest(object):
@@ -162,7 +163,8 @@ class ESIRequest(object):
             ESIErrorLimiter.check_limit(redis)
             rheaders = {}
             try:
-                resp = requests.get(cls.request_url(**kwargs), timeout=5, verify=True)
+                resp = requests.get(cls.request_url(**kwargs), headers=RequestHeaders.get_headers(),
+                                    timeout=5, verify=True)
                 rheaders = resp.headers
                 if resp.status_code == 200:
                     d = resp.json()

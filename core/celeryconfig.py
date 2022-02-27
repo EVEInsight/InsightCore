@@ -66,10 +66,10 @@ task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"}
 beat_schedule = {
     "get-mail-redisq": {
         "task": "core.tasks.pipeline.GetMailRedisQ.GetMailRedisQ",
-        "schedule": 1,
+        "schedule": 0.5,
         "options": {
             "ignore_result": True,
-            "expires": 3
+            "expires": 2
         }
     },
 }
