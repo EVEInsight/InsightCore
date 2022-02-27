@@ -243,6 +243,34 @@ class Mail:
         return None
 
     @property
+    def sorted_attackers_ship_adjusted_value(self):
+        """Dynamically get attacker objects sorted in descending order by ship adjusted values.
+
+        :return: Attacker objects sorted in descending order by ship adjusted values.
+        :rtype: list
+        """
+        has_value = []
+        no_value = []
+        for a in self.attackers:
+            if a.ship_adjusted_price is not None:
+                has_value.append(a)
+            else:
+                no_value.append(a)
+        return sorted(has_value, reverse=True, key=lambda x: x.ship_adjusted_price) + no_value
+
+    @property
+    def highest_attacker_ship_adjusted_value(self):
+        """Get the attacker with highest ship adjusted value
+
+        :return: Attacker object with highest ship adjusted value
+        :rtype: MailAttacker or None
+        """
+        try:
+            return self.sorted_attackers_ship_adjusted_value[0]
+        except IndexError:
+            return None
+
+    @property
     def involved(self):
         """Dynamically get the involved count
 

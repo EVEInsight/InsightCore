@@ -78,7 +78,7 @@ class ESIRequest(object):
         :return: Dictionary or list containing cached response from ESI.
             If ESI returned a 404 error dictionary the response will be in the form
             {"error": error_message, "error_code": 404}
-            Only /universe/factions/ returns a list, all else return dictionaries.
+            Only /universe/factions/ and /markets/prices/ returns a list, all else return dictionaries.
         :rtype: dict or list
         :raises core.exceptions.ESI.NotResolved: If the request has not yet been resolved by ESI.
         :raises core.exceptions.ESI.InputValidationError: If an input ESI parameter contains
@@ -128,7 +128,7 @@ class ESIRequest(object):
         :return: Dictionary or list containing response from ESI.
             If ESI returned a 404 dictionary error the response will be in the form
             {"error": error_message, "error_code": 404}
-            Only /universe/factions/ returns a list, all else return dictionaries.
+            Only /universe/factions/ and /markets/prices/ returns a list, all else return dictionaries.
         :rtype: dict or list
         """
         return cls.get_async(ignore_result=False, **kwargs).get(timeout=timeout, propagate=True)
@@ -146,9 +146,9 @@ class ESIRequest(object):
         :return: Dictionary containing response from ESI.
             If ESI returned a 404 error the response will be in the form
             {"error": error_message, "error_code": 404}
-            If the response doesn't require request inputs then list is usually returned (list factions, systems, etc).
+            If the response doesn't require request inputs then list is usually returned (list factions, prices, etc).
             If the response requires inputs a dictionary is usually returned.
-            Only /universe/factions/ returns a list, all else return dictionaries.
+            Only /universe/factions/ and /markets/prices/ returns a list, all else return dictionaries.
         :rtype: dict or list
         :raises core.exceptions.utils.ErrorLimitExceeded: If the remaining error limit is below the allowed threshold.
         """

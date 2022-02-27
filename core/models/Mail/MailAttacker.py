@@ -32,6 +32,7 @@ class MailAttacker:
     _ship_group_name: str = None
     _ship_category_id: int = None
     _ship_category_name: str = None
+    _ship_adjusted_price: float = None
 
     # unresolved ship weapon type info requiring api call
     _weapon_type_name: str = None
@@ -39,6 +40,7 @@ class MailAttacker:
     _weapon_group_name: str = None
     _weapon_category_id: int = None
     _weapon_category_name: str = None
+    _weapon_adjusted_price: float = None
 
     def __init__(self, dct: dict):
         for k, v in dct.items():
@@ -110,10 +112,9 @@ class MailAttacker:
 
         :param esi: ESI response list. ESI is required to return this value.
         """
-        if self.faction_id:
-            for f in esi:
-                if f.get("faction_id") == self.faction_id:
-                    self._faction_name = f.get("name")
+        for f in esi:
+            if f.get("faction_id") == self.faction_id:
+                self._faction_name = f.get("name")
 
     @property
     def ship_type_name(self):
@@ -156,6 +157,25 @@ class MailAttacker:
         self._ship_category_name = esi["name"]
 
     @property
+    def ship_adjusted_price(self):
+        """Set through ESI prices list call.
+
+        :return: Adjusted price - optional
+        :rtype: float or None
+        """
+        return self._ship_adjusted_price
+
+    @ship_adjusted_price.setter
+    def ship_adjusted_price(self, esi: list):
+        """Set through ESI prices list call.
+
+        :param esi: ESI response list. ESI is required to return this value.
+        """
+        for t in esi:
+            if t.get("type_id") == self.ship_type_id:
+                self._ship_adjusted_price = t.get("adjusted_price")
+
+    @property
     def weapon_type_name(self):
         return self._weapon_type_name
 
@@ -194,6 +214,25 @@ class MailAttacker:
     @weapon_category_name.setter
     def weapon_category_name(self, esi: dict):
         self._weapon_category_name = esi["name"]
+
+    @property
+    def weapon_adjusted_price(self):
+        """Set through ESI prices list call.
+
+        :return: Adjusted price - optional
+        :rtype: float or None
+        """
+        return self._weapon_adjusted_price
+
+    @weapon_adjusted_price.setter
+    def weapon_adjusted_price(self, esi: list):
+        """Set through ESI prices list call.
+
+        :param esi: ESI response list. ESI is required to return this value.
+        """
+        for t in esi:
+            if t.get("type_id") == self.weapon_type_id:
+                self._weapon_adjusted_price = t.get("adjusted_price")
 
 
 @dataclass(init=False)

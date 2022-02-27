@@ -12,9 +12,10 @@ from core.tasks.ESI.RegionInfo import RegionInfo
 from core.tasks.ESI.TypeInfo import TypeInfo
 from core.tasks.ESI.GroupInfo import GroupInfo
 from core.tasks.ESI.CategoryInfo import CategoryInfo
+from core.tasks.ESI.PricesList import PricesList
 
 
-@app.task(base=BaseTask, bind=True, max_retries=10, default_retry_delay=5, autoretry_for=(Exception,))
+@app.task(base=BaseTask, bind=True, max_retries=25, default_retry_delay=5, autoretry_for=(Exception,))
 def ProcessMailLoadFromESI(self, mail_json) -> None:
     """Update mail object will all ESI resolved data.
     Raises NotResolved exceptions to trigger retries if the data hasn't been loaded from ESI yet.
@@ -64,6 +65,8 @@ def ProcessMailLoadFromESI(self, mail_json) -> None:
             m.victim.ship_category_id = esi
             esi = CategoryInfo.get_cached(r, category_id=m.victim.ship_category_id)
             m.victim.ship_category_name = esi
+            esi = PricesList.get_cached(r)
+            m.victim.ship_adjusted_price = esi
 
     for a in m.attackers:
         if a.character_id:
@@ -87,6 +90,8 @@ def ProcessMailLoadFromESI(self, mail_json) -> None:
             a.ship_category_id = esi
             esi = CategoryInfo.get_cached(r, category_id=a.ship_category_id)
             a.ship_category_name = esi
+            esi = PricesList.get_cached(r)
+            a.ship_adjusted_price = esi
         if a.weapon_type_id:
             esi = TypeInfo.get_cached(r, type_id=a.weapon_type_id)
             a.weapon_type_name = esi
@@ -96,5 +101,7 @@ def ProcessMailLoadFromESI(self, mail_json) -> None:
             a.weapon_category_id = esi
             esi = CategoryInfo.get_cached(r, category_id=a.weapon_category_id)
             a.weapon_category_name = esi
+            esi = PricesList.get_cached(r)
+            a.weapon_adjusted_price = esi
 
     EnqueueMailToActiveChannels.apply_async(kwargs={"mail_json": m.to_json()}, ignore_result=True)

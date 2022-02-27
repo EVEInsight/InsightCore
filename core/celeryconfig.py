@@ -40,7 +40,8 @@ include = ["core.tasks.pipeline.GetMailRedisQ",
            "core.tasks.ESI.RegionInfo",
            "core.tasks.ESI.TypeInfo",
            "core.tasks.ESI.GroupInfo",
-           "core.tasks.ESI.CategoryInfo"
+           "core.tasks.ESI.CategoryInfo",
+           "core.tasks.ESI.PricesList"
            ]
 task_default_queue = "CeleryDefault"
 task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"},
@@ -57,6 +58,7 @@ task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"}
                "core.tasks.ESI.TypeInfo.*": {"queue": "GetTypeInfo"},
                "core.tasks.ESI.GroupInfo.*": {"queue": "GetGroupInfo"},
                "core.tasks.ESI.CategoryInfo.*": {"queue": "GetCategoryInfo"},
+               "core.tasks.ESI.PricesList.*": {"queue": "GetPricesList"}
                }
 # task_annotations = {"core.tasks.ESI.GetCharacterPublicInfo.GetCharacterPublicInfo": {'rate_limit': '1/s'},
 #                     "core.tasks.ESI.GetCharacterPublicInfo.GetCorporationInfo": {'rate_limit': '1/s'},

@@ -3,9 +3,10 @@ from core.models.Mail.Mail import RedisQMail
 from core.tasks.ESI.CharacterPublicInfo import CharacterPublicInfo
 from core.tasks.ESI.CorporationInfo import CorporationInfo
 from core.tasks.ESI.AllianceInfo import AllianceInfo
+from core.tasks.ESI.FactionsList import FactionsList
 from core.tasks.ESI.SystemInfo import SystemInfo
 from core.tasks.ESI.TypeInfo import TypeInfo
-from core.tasks.ESI.FactionsList import FactionsList
+from core.tasks.ESI.PricesList import PricesList
 
 
 @app.task(bind=True, max_retries=3, default_retry_delay=60*1, autoretry_for=(Exception,))
@@ -33,6 +34,7 @@ def ProcessMailEnqueueESICalls(self, mail_json: dict) -> None:
             FactionsList.get_async(ignore_result=True)
         if m.victim.ship_type_id:
             TypeInfo.get_async(ignore_result=True, type_id=m.victim.ship_type_id)
+            PricesList.get_async(ignore_result=True)
 
     for a in m.attackers:
         if a.character_id:
@@ -45,6 +47,8 @@ def ProcessMailEnqueueESICalls(self, mail_json: dict) -> None:
             FactionsList.get_async(ignore_result=True)
         if a.ship_type_id:
             TypeInfo.get_async(ignore_result=True, type_id=a.ship_type_id)
+            PricesList.get_async(ignore_result=True)
         if a.weapon_type_id:
             TypeInfo.get_async(ignore_result=True, type_id=a.weapon_type_id)
+            PricesList.get_async(ignore_result=True)
 
