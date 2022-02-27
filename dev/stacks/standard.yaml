@@ -4,6 +4,26 @@
 
 version: '3.8'
 services:
+  db:
+    image: mongo:5.0.6
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "root"
+      MONGO_INITDB_ROOT_PASSWORD: "insightdev"
+      MONGO_INITDB_DATABASE: "insight"
+    volumes:
+      - db-data:/data/db
+    networks:
+      - insightdev
+    ports:
+      - target: 27017
+        published: 27017
+        protocol: tcp
+        mode: host
   rabbitmq:
     image: rabbitmq:3-management
     deploy:
@@ -50,5 +70,6 @@ networks:
   insightdev:
     driver: overlay
 volumes:
+  db-data:
   rabbitmq-data:
   redis-data:
