@@ -89,7 +89,7 @@ class ESIRequest(object):
         if cached_data:
             return json.loads(cached_data)
         else:
-            raise NotResolved
+            raise NotResolved(f"Not resolved. ESI request parameters: {kwargs}")
 
     @classmethod
     def _get_celery_async_result(cls, ignore_result: bool = False, **kwargs) -> AsyncResult:
