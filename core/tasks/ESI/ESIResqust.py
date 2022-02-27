@@ -180,8 +180,8 @@ class ESIRequest(object):
                                                  time=dtparse(rheaders["date"], ignoretz=True)
                                                  )
                     return json.loads(redis.get(lookup_key))
-                elif resp.status_code == 404:
-                    d = {"error": str(resp.json().get("error")), "error_code": 404}
+                elif resp.status_code == 400 or resp.status_code == 404:
+                    d = {"error": str(resp.json().get("error")), "error_code": resp.status_code}
                     redis.set(name=lookup_key, value=json.dumps(d), ex=cls.ttl_404())
                     ESIErrorLimiter.update_limit(redis,
                                                  error_limit_remain=int(rheaders["x-esi-error-limit-remain"]),
