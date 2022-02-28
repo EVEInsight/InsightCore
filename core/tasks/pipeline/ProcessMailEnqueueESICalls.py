@@ -9,7 +9,7 @@ from core.tasks.ESI.TypeInfo import TypeInfo
 from core.tasks.ESI.PricesList import PricesList
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=60*1, autoretry_for=(Exception,))
+@app.task(bind=True, max_retries=3, default_retry_delay=60, autoretry_for=(Exception,))
 def ProcessMailEnqueueESICalls(self, mail_json: dict) -> None:
     """Enqueue all ESI calls to resolve data that isn't present from ZK.
 

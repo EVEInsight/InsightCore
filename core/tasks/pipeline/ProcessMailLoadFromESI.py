@@ -1,6 +1,6 @@
 from core.celery import app
 from core.models.Mail.Mail import Mail, RedisQMail
-from .EnqueueMailToActiveChannels import EnqueueMailToActiveChannels
+from .EnqueueMailToStreams import EnqueueMailToStreams
 from core.tasks.BaseTasks.BaseTask import BaseTask
 from core.tasks.ESI.CharacterPublicInfo import CharacterPublicInfo
 from core.tasks.ESI.CorporationInfo import CorporationInfo
@@ -15,7 +15,7 @@ from core.tasks.ESI.CategoryInfo import CategoryInfo
 from core.tasks.ESI.PricesList import PricesList
 
 
-@app.task(base=BaseTask, bind=True, max_retries=25, default_retry_delay=5, autoretry_for=(Exception,))
+@app.task(base=BaseTask, bind=True, max_retries=25, retry_backoff=5, autoretry_for=(Exception,))
 def ProcessMailLoadFromESI(self, mail_json) -> None:
     """Update mail object will all ESI resolved data.
     Raises NotResolved exceptions to trigger retries if the data hasn't been loaded from ESI yet.
@@ -104,4 +104,4 @@ def ProcessMailLoadFromESI(self, mail_json) -> None:
             esi = PricesList.get_cached(r)
             a.weapon_adjusted_price = esi
 
-    EnqueueMailToActiveChannels.apply_async(kwargs={"mail_json": m.to_json()}, ignore_result=True)
+    EnqueueMailToStreams.apply_async(kwargs={"mail_json": m.to_json()}, ignore_result=True)
