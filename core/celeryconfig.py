@@ -30,7 +30,10 @@ enable_utc = True
 include = ["core.tasks.pipeline.GetMailRedisQ",
            "core.tasks.pipeline.ProcessMailEnqueueESICalls",
            "core.tasks.pipeline.ProcessMailLoadFromESI",
-           "core.tasks.pipeline.EnqueueMailToActiveChannels",
+           "core.tasks.pipeline.EnqueueMailToStreams",
+           "core.tasks.pipeline.StreamFiltersStage1",
+           "core.tasks.pipeline.StreamFiltersStage2",
+           "core.tasks.pipeline.StreamFiltersStage3",
            "core.tasks.ESI.CharacterPublicInfo",
            "core.tasks.ESI.CorporationInfo",
            "core.tasks.ESI.AllianceInfo",
@@ -41,13 +44,17 @@ include = ["core.tasks.pipeline.GetMailRedisQ",
            "core.tasks.ESI.TypeInfo",
            "core.tasks.ESI.GroupInfo",
            "core.tasks.ESI.CategoryInfo",
-           "core.tasks.ESI.PricesList"
+           "core.tasks.ESI.PricesList",
+           "core.tasks.API.CreateStream"
            ]
 task_default_queue = "CeleryDefault"
 task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"},
                "core.tasks.pipeline.ProcessMailEnqueueESICalls.*": {"queue": "ProcessMailEnqueueESICalls"},
                "core.tasks.pipeline.ProcessMailLoadFromESI.*": {"queue": "ProcessMailLoadFromESI"},
-               "core.tasks.pipeline.EnqueueMailToActiveChannels.*": {"queue": "EnqueueMailToActiveChannels"},
+               "core.tasks.pipeline.EnqueueMailToStreams.*": {"queue": "EnqueueMailToStreams"},
+               "core.tasks.pipeline.StreamFiltersStage1.*": {"queue": "StreamFiltersStage1"},
+               "core.tasks.pipeline.StreamFiltersStage2.*": {"queue": "StreamFiltersStage2"},
+               "core.tasks.pipeline.StreamFiltersStage3.*": {"queue": "StreamFiltersStage3"},
                "core.tasks.ESI.CharacterPublicInfo.*": {"queue": "GetCharacterPublicInfo"},
                "core.tasks.ESI.CorporationInfo.*": {"queue": "GetCorporationInfo"},
                "core.tasks.ESI.AllianceInfo.*": {"queue": "GetAllianceInfo"},
@@ -58,7 +65,8 @@ task_routes = {"core.tasks.pipeline.GetMailRedisQ.*": {"queue": "GetMailRedisQ"}
                "core.tasks.ESI.TypeInfo.*": {"queue": "GetTypeInfo"},
                "core.tasks.ESI.GroupInfo.*": {"queue": "GetGroupInfo"},
                "core.tasks.ESI.CategoryInfo.*": {"queue": "GetCategoryInfo"},
-               "core.tasks.ESI.PricesList.*": {"queue": "GetPricesList"}
+               "core.tasks.ESI.PricesList.*": {"queue": "GetPricesList"},
+               "core.tasks.API.CreateStream.*": {"queue": "CreateStream"}
                }
 # task_annotations = {"core.tasks.ESI.GetCharacterPublicInfo.GetCharacterPublicInfo": {'rate_limit': '1/s'},
 #                     "core.tasks.ESI.GetCharacterPublicInfo.GetCorporationInfo": {'rate_limit': '1/s'},
