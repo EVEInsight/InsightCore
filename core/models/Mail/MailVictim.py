@@ -1,13 +1,14 @@
 from dataclasses import dataclass
+from core.models.BaseModel import BaseModel
 
 
-@dataclass(init=False)
-class MailVictim:
+@dataclass
+class MailVictim(BaseModel):
     """
     mail victim representing data for Insight parsed from ZK json and additional attributes resolved through ESI
     """
     # directly resolved through zk mail json - required
-    damaged_taken: int
+    damage_taken: int
     ship_type_id: int
 
     # directly resolved through zk mail json - optional
@@ -33,20 +34,6 @@ class MailVictim:
     _ship_category_id: int = None
     _ship_category_name: str = None
     _ship_adjusted_price: float = None
-
-    def __init__(self, dct: dict):
-        for k, v in dct.items():
-            setattr(self, k, v)
-
-    @classmethod
-    def from_json(cls, dct):
-        """Returns an instance of class from a json dictionary
-
-        :param dct: Dictionary returned from the to_json() method
-        :return: An instance of the class
-        :rtype: MailVictim
-        """
-        return cls(dct)
 
     @property
     def affiliation_name(self):
@@ -152,10 +139,10 @@ class MailVictim:
     def ship_adjusted_price(self):
         """Set through ESI prices list call.
 
-        :return: Adjusted price - optional
-        :rtype: float or None
+        :return: Adjusted price if available else returns 0
+        :rtype: float
         """
-        return self._ship_adjusted_price
+        return self._ship_adjusted_price if self._ship_adjusted_price is not None else 0
 
     @ship_adjusted_price.setter
     def ship_adjusted_price(self, esi: list):
@@ -168,19 +155,20 @@ class MailVictim:
                 self._ship_adjusted_price = t.get("adjusted_price")
 
 
-@dataclass(init=False)
+@dataclass
 class RedisQVictim(MailVictim):
-    def __init__(self, dct: dict):
-        setattr(self, "damaged_taken",  dct["damage_taken"])
-        setattr(self, "ship_type_id",   dct.get("ship_type_id"))
-        setattr(self, "alliance_id",    dct.get("alliance_id"))
-        setattr(self, "character_id",   dct.get("character_id"))
-        setattr(self, "corporation_id", dct.get("corporation_id"))
-        setattr(self, "faction_id",     dct.get("faction_id"))
-        setattr(self, "position_x",     dct.get("position", {}).get("x"))
-        setattr(self, "position_y",     dct.get("position", {}).get("y"))
-        setattr(self, "position_z",     dct.get("position", {}).get("z"))
-
     @classmethod
-    def from_json(cls, dct):
-        return cls(dct)
+    def from_json(cls, dct: dict):
+        d = dct
+        d = {
+            "damage_taken":     d["damage_taken"],
+            "alliance_id":      d.get("alliance_id"),
+            "character_id":     d.get("character_id"),
+            "corporation_id":   d.get("corporation_id"),
+            "faction_id":       d.get("faction_id"),
+            "ship_type_id":     d.get("ship_type_id"),
+            "position_x":       d.get("position", {}).get("x"),
+            "position_y":       d.get("position", {}).get("y"),
+            "position_z":       d.get("position", {}).get("z"),
+        }
+        return super().from_json(d)

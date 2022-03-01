@@ -55,8 +55,8 @@ class Filter(BaseModel):
     attacker_weapon_type_ids_include: list[int] = field(default_factory=lambda: ["*"])
     attacker_weapon_type_ids_exclude: list[int] = field(default_factory=list)
 
-    victim_min_damaged_taken: float = 0.0
-    victim_max_damaged_taken: float = float("inf")
+    victim_min_damage_taken: float = 0.0
+    victim_max_damage_taken: float = float("inf")
     victim_alliance_ids_include: list[int] = field(default_factory=list)
     victim_alliance_ids_exclude: list[int] = field(default_factory=list)
     victim_character_ids_include: list[int] = field(default_factory=list)

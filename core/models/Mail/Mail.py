@@ -3,14 +3,18 @@ from datetime import datetime
 from .MailAttacker import MailAttacker, RedisQMailAttacker
 from .MailVictim import MailVictim, RedisQVictim
 from dateutil.parser import parse as dtparse
+from core.models.BaseModel import BaseModel
 
 
-@dataclass(init=False)
-class Mail:
+@dataclass
+class Mail(BaseModel):
     # directly resolved through zk mail json - required
     id: int
-    killmail_time: datetime
+    _killmail_time: str
     system_id: int
+
+    # utility vars
+    _parsed_time: str
 
     zkb_locationID: int
     zkb_hash: str
@@ -37,36 +41,6 @@ class Mail:
     _region_id: int = None
     _region_name: str = None
 
-    # utility vars
-    parsed_time: datetime = None
-
-    def __init__(self, dct: dict):
-        for k, v in dct.items():
-            if k == "attackers":
-                self.attackers = []
-                for a in v:
-                    attacker = MailAttacker.from_json(a)
-                    self.attackers.append(attacker)
-            elif k == "victim":
-                setattr(self, k, MailVictim.from_json(v))
-            elif k == "_final_blow_attacker":
-                continue
-            elif k == "killmail_time" or k == "parsed_time":
-                setattr(self, k, dtparse(v, ignoretz=True))
-            else:
-                setattr(self, k, v)
-        self.parsed_time = datetime.utcnow()
-
-    def to_json(self) -> dict:
-        """Converts the class object to a json compatible dictionary
-
-        :return: The json compatible dictionary of this object
-        """
-        d = asdict(self)
-        d["killmail_time"] = str(d["killmail_time"])
-        d["parsed_time"] = str(d["parsed_time"])
-        return d
-
     @classmethod
     def from_json(cls, dct: dict):
         """Returns an instance of class from a json dictionary
@@ -75,7 +49,24 @@ class Mail:
         :return: An instance of the class
         :rtype: Mail
         """
-        return cls(dct)
+        m = super().from_json(dct)
+        m.victim = MailVictim.from_json(m.victim)  # covert to class instance
+        m.attackers = [MailAttacker.from_json(a) for a in m.attackers]  # covert to class instances
+        return m
+
+    @property
+    def killmail_time(self) -> datetime:
+        """
+        :return: UTC mail date time
+        """
+        return dtparse(self._killmail_time, ignoretz=True)
+
+    @property
+    def parsed_time(self) -> datetime:
+        """
+        :return: UTC date time the mail was initially parsed by Insight
+        """
+        return dtparse(self._parsed_time, ignoretz=True)
 
     @property
     def system_name(self):
@@ -280,32 +271,28 @@ class Mail:
         return len(self.attackers)
 
 
-@dataclass(init=False)
+@dataclass
 class RedisQMail(Mail):
-    def __init__(self, dct: dict):
-        d = dct.get("package")
-        setattr(self, "id",                 d["killmail"]["killmail_id"])
-        setattr(self, "killmail_time",      dtparse(d["killmail"]["killmail_time"], ignoretz=True))
-        setattr(self, "system_id",          d["killmail"]["solar_system_id"])
-        setattr(self, "zkb_locationID",     d["zkb"]["locationID"])
-        setattr(self, "zkb_hash",           d["zkb"]["hash"])
-        setattr(self, "zkb_fittedValue",    d["zkb"]["fittedValue"])
-        setattr(self, "zkb_droppedValue",   d["zkb"]["droppedValue"])
-        setattr(self, "zkb_destroyedValue", d["zkb"]["destroyedValue"])
-        setattr(self, "zkb_totalValue",     d["zkb"]["totalValue"])
-        setattr(self, "zkb_points",         d["zkb"]["points"])
-        setattr(self, "zkb_npc",            d["zkb"]["npc"])
-        setattr(self, "zkb_solo",           d["zkb"]["solo"])
-        setattr(self, "zkb_awox",           d["zkb"]["awox"])
-        setattr(self, "zkb_href",           d["zkb"]["href"])
-        setattr(self, "victim",             RedisQVictim.from_json(d["killmail"]["victim"]))
-        self.attackers = []
-        for a in d["killmail"]["attackers"]:
-            attacker = RedisQMailAttacker.from_json(a)
-            self.attackers.append(attacker)
-
-        self.parsed_time = datetime.utcnow()
-
     @classmethod
     def from_json(cls, dct: dict):
-        return cls(dct)
+        d = dct.get("package")
+        m = {
+            "id":                   d["killmail"]["killmail_id"],
+            "_killmail_time":       d["killmail"]["killmail_time"],
+            "system_id":            d["killmail"]["solar_system_id"],
+            "zkb_locationID":       d["zkb"]["locationID"],
+            "zkb_hash":             d["zkb"]["hash"],
+            "zkb_fittedValue":      d["zkb"]["fittedValue"],
+            "zkb_droppedValue":     d["zkb"]["droppedValue"],
+            "zkb_destroyedValue":   d["zkb"]["destroyedValue"],
+            "zkb_totalValue":       d["zkb"]["totalValue"],
+            "zkb_points":           d["zkb"]["points"],
+            "zkb_npc":              d["zkb"]["npc"],
+            "zkb_solo":             d["zkb"]["solo"],
+            "zkb_awox":             d["zkb"]["awox"],
+            "zkb_href":             d["zkb"]["href"],
+            "victim":               RedisQVictim.from_json(d["killmail"]["victim"]),
+            "attackers":            [RedisQMailAttacker.from_json(a) for a in d["killmail"]["attackers"]],
+            "_parsed_time":         str(datetime.utcnow())
+        }
+        return super(Mail, cls).from_json(m)  # don't call Mail from_json, call BaseModel from_json

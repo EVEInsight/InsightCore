@@ -68,7 +68,7 @@ def StreamFiltersStage1(self, mail_json: dict, stream_json: dict) -> None:
         return
 
     # target filters
-    if not f.victim_min_damaged_taken <= m.victim.damaged_taken <= f.victim_max_damaged_taken:
+    if not f.victim_min_damage_taken <= m.victim.damage_taken <= f.victim_max_damage_taken:
         return
     if not passes_filter(f.victim_alliance_ids_include, f.victim_alliance_ids_exclude, m.victim.alliance_id):
         return
