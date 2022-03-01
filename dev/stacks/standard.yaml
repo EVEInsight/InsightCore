@@ -31,6 +31,9 @@ services:
       replicas: 1
       restart_policy:
         condition: any
+      resources:
+        limits:
+          memory: 2048M
     hostname: insightmq
     environment:
       RABBITMQ_DEFAULT_USER: "insight"
