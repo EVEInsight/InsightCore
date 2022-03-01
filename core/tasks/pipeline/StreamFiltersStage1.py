@@ -1,73 +1,105 @@
 from core.celery import app
 from core.tasks.BaseTasks.BaseTask import BaseTask
 from .StreamFiltersStage2 import StreamFiltersStage2
-from dateutil.parser import parse as dtparse
 from datetime import datetime
+from core.models.Mail.Mail import Mail
+from core.models.Stream.Stream import Stream
 
 
-@app.task(base=BaseTask, bind=True, max_retries=3, default_retry_delay=5, autoretry_for=(Exception,))
+def passes_filter(filter_ids_include, filter_ids_exclude, mail_id) -> bool:
+    """Checks if the ID from a mail exists in filter_ids_include after removing filter_ids_exclude
+
+    :param filter_ids_include: The match filter ids of integers. Can include the "*" wildcard string to match all.
+    :type filter_ids_include: list[int]
+    :param filter_ids_exclude: The excluded filter ids of integers.
+    :type filter_ids_exclude: list[int]
+    :param mail_id: The comparison id that must exist in set(filter_ids_include) - set(filter_ids_exclude)
+    :return: True if mail_id exists in set(filter_ids_include) - set(filter_ids_exclude) else False
+    """
+    set_filter_ids_include = set(filter_ids_include)
+    set_filter_ids_exclude = set(filter_ids_exclude)
+    filter_ids = set_filter_ids_include - set_filter_ids_exclude
+    if "*" in set_filter_ids_include and mail_id not in set_filter_ids_exclude:
+        return True
+    elif "*" in set_filter_ids_include and mail_id in set_filter_ids_exclude:
+        return False
+    elif mail_id in filter_ids:
+        return True
+    else:
+        return False
+
+
+@app.task(base=BaseTask, bind=True, max_retries=3, retry_backoff=60, autoretry_for=(Exception,))
 def StreamFiltersStage1(self, mail_json: dict, stream_json: dict) -> None:
-    f = stream_json["filter"]
-    if f["_km_require_npc"] and not mail_json["zkb_npc"]:
+    """Check filters for a stream against a mail. If all filters pass then move to next stage.
+    If the stream does not pass a single filter then it is discarded.
+
+    :param self: Celery self reference required for retries.
+    :param mail_json: Mail json
+    :param stream_json: Steam json
+    :rtype: None
+    """
+    m = Mail.from_json(mail_json)
+    s = Stream.from_json(stream_json)
+    f = s.filter
+
+    # zk detail filters
+    if f.km_require_npc and not m.zkb_npc:
         return
-    if f["_km_require_solo"] and not mail_json["zkb_solo"]:
+    if f.km_require_solo and not m.zkb_solo:
         return
-    if f["_km_require_awox"] and not mail_json["zkb_awox"]:
+    if f.km_require_awox and not m.zkb_awox:
+        return
+    if not (f.km_min_points <= m.zkb_points <= f.km_max_points):
         return
 
-    if not (f["_km_min_fittedValue"] <= mail_json["zkb_fittedValue"] <= f["_km_max_fittedValue"]):
+    # price filters
+    if not (f.km_min_fittedValue <= m.zkb_fittedValue <= f.km_max_fittedValue):
         return
-    if not (f["_km_min_droppedValue"] <= mail_json["zkb_droppedValue"] <= f["_km_max_droppedValue"]):
+    if not (f.km_min_droppedValue <= m.zkb_droppedValue <= f.km_max_droppedValue):
         return
-    if not (f["_km_min_destroyedValue"] <= mail_json["zkb_destroyedValue"] <= f["_km_max_destroyedValue"]):
+    if not (f.km_min_destroyedValue <= m.zkb_destroyedValue <= f.km_max_destroyedValue):
         return
-    if not (f["_km_min_totalValue"] <= mail_json["zkb_totalValue"] <= f["_km_max_totalValue"]):
-        return
-
-    if not (f["_km_min_points"] <= mail_json["zkb_points"] <= f["_km_max_points"]):
+    if not (f.km_min_totalValue <= m.zkb_totalValue <= f.km_max_totalValue):
         return
 
-    if not (f["_km_min_age_seconds"]
-            <= (datetime.utcnow() - dtparse(mail_json["killmail_time"], ignoretz=True)).total_seconds()
-            <= f["_km_max_age_seconds"]):
-        return
-    if not (f["_km_min_points"] <= mail_json["zkb_points"] <= f["_km_max_points"]):
+    # time filters
+    if not (f.km_min_age_seconds <= (datetime.utcnow() - m.killmail_time).total_seconds() <= f.km_max_age_seconds):
         return
 
-    if not (f["_system_min_security_status"]
-            <= mail_json["_system_security_status"]
-            <= f["_system_max_security_status"]):
+    # target filters
+    if not f.victim_min_damaged_taken <= m.victim.damaged_taken <= f.victim_max_damaged_taken:
+        return
+    if not passes_filter(f.victim_alliance_ids_include, f.victim_alliance_ids_exclude, m.victim.alliance_id):
+        return
+    if not passes_filter(f.victim_corporation_ids_include, f.victim_corporation_ids_exclude, m.victim.corporation_id):
+        return
+    if not passes_filter(f.victim_character_ids_include, f.victim_character_ids_exclude, m.victim.character_id):
+        return
+    if not passes_filter(f.victim_faction_ids_include, f.victim_faction_ids_exclude, m.victim.faction_id):
+        return
+    if not passes_filter(f.victim_ship_category_ids_include, f.victim_ship_category_ids_exclude,
+                         m.victim.ship_category_id):
+        return
+    if not passes_filter(f.victim_ship_group_ids_include, f.victim_ship_group_ids_exclude,
+                         m.victim.ship_group_id):
+        return
+    if not passes_filter(f.victim_ship_type_ids_include, f.victim_ship_type_ids_exclude,
+                         m.victim.ship_type_id):
         return
 
-    alliance_ids = set(f["_victim_alliance_ids_include"]) - set(f["_victim_alliance_ids_exclude"])
-    if mail_json["victim"]["alliance_id"] not in alliance_ids and "*" not in alliance_ids:
+    # location / system filter
+    # Remaining filters for systems require ESI lookups done in next filter stage
+    if not (f.system_min_security_status <= m.system_security_status <= f.system_max_security_status):
         return
-    corporation_ids = set(f["_victim_corporation_ids_include"]) - set(f["_victim_corporation_ids_exclude"])
-    if mail_json["victim"]["corporation_id"] not in corporation_ids and "*" not in corporation_ids:
+    if not passes_filter(f.region_ids_include, f.region_ids_exclude, m.region_id):
         return
-    character_ids = set(f["_victim_character_ids_include"]) - set(f["_victim_character_ids_exclude"])
-    if mail_json["victim"]["character_id"] not in character_ids and "*" not in character_ids:
+    if not passes_filter(f.constellation_ids_include, f.constellation_ids_exclude, m.constellation_id):
         return
-    faction_ids = set(f["_victim_faction_ids_include"]) - set(f["_victim_faction_ids_exclude"])
-    if mail_json["victim"]["faction_id"] not in faction_ids and "*" not in faction_ids:
+    if not passes_filter(f.location_ids_include, f.location_ids_exclude, m.zkb_locationID):
         return
-    _ship_category_ids = set(f["_victim_ship_category_ids_include"]) - set(f["_victim_ship_category_ids_exclude"])
-    if mail_json["victim"]["_ship_category_id"] not in _ship_category_ids and "*" not in _ship_category_ids:
+    if m.system_id in f.system_ids_exclude:
         return
 
-    region_ids = set(f["_region_ids_include"]) - set(f["_region_ids_exclude"])
-    if mail_json["_region_id"] not in region_ids and "*" not in region_ids:
-        return
-    constellation_ids = set(f["_constellation_ids_include"]) - set(f["_constellation_ids_exclude"])
-    if mail_json["_constellation_id"] not in constellation_ids and "*" not in constellation_ids:
-        return
-    system_ids = set(f["_system_ids_include"]) - set(f["_system_ids_exclude"])
-    if mail_json["system_id"] not in system_ids and "*" not in system_ids:
-        return
-    location_ids = set(f["_location_ids_include"]) - set(f["_location_ids_exclude"])
-    if mail_json["zkb_locationID"] not in location_ids and "*" not in location_ids:
-        return
-
-    # todo update details for post object
     StreamFiltersStage2.apply_async(kwargs={"mail_json": mail_json, "stream_json": stream_json}, ignore_result=True)
 

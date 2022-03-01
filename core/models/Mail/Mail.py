@@ -52,7 +52,7 @@ class Mail:
             elif k == "_final_blow_attacker":
                 continue
             elif k == "killmail_time" or k == "parsed_time":
-                setattr(self, k, dtparse(v))
+                setattr(self, k, dtparse(v, ignoretz=True))
             else:
                 setattr(self, k, v)
         self.parsed_time = datetime.utcnow()
@@ -285,7 +285,7 @@ class RedisQMail(Mail):
     def __init__(self, dct: dict):
         d = dct.get("package")
         setattr(self, "id",                 d["killmail"]["killmail_id"])
-        setattr(self, "killmail_time",      dtparse(d["killmail"]["killmail_time"]))
+        setattr(self, "killmail_time",      dtparse(d["killmail"]["killmail_time"], ignoretz=True))
         setattr(self, "system_id",          d["killmail"]["solar_system_id"])
         setattr(self, "zkb_locationID",     d["zkb"]["locationID"])
         setattr(self, "zkb_hash",           d["zkb"]["hash"])
@@ -309,5 +309,3 @@ class RedisQMail(Mail):
     @classmethod
     def from_json(cls, dct: dict):
         return cls(dct)
-
-
