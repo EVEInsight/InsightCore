@@ -1,15 +1,16 @@
-from core.celery import app
-from core.tasks.BaseTasks.BaseTask import BaseTask
+from core.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
 from core.models.Mail.Mail import Mail
-from core.models.Stream.Stream import Stream
 
 
-@app.task(base=BaseTask, bind=True, max_retries=5, default_retry_delay=60, autoretry_for=(Exception,))
-def StreamFiltersStage2(self, mail_json, stream_json) -> None:
-    m = Mail.from_json(mail_json)
-    s = Stream.from_json(stream_json)
-    print(m.id)
-    # todo queue post call
-    return
+class StreamFiltersStage2(InsightCoreTask):
+    autoretry_for = (Exception,)
+    max_retries = 5
+    retry_backoff = 60
+    retry_backoff_max = 600
+    retry_jitter = False
 
-
+    def run(self, mail_json, stream_json) -> None:
+        m = Mail.from_json(mail_json)
+        print(m.id)
+        # todo queue post call
+        return
