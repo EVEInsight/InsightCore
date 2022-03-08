@@ -1,4 +1,5 @@
 Celery
+ESICelery
 pymongo
 python-dateutil
 redis
