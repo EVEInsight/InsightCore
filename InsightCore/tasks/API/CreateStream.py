@@ -1,5 +1,5 @@
-from core.models.Stream.Stream import Stream
-from core.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
+from InsightCore.models.Stream.Stream import Stream
+from InsightCore.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
 from pymongo.collection import Collection
 
 

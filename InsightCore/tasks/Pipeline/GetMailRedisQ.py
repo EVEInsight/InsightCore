@@ -1,7 +1,7 @@
 import os
 import time
 import warnings
-from core.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
+from InsightCore.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
 import requests
 import string
 import random

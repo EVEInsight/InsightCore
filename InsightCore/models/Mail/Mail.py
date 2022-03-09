@@ -3,7 +3,7 @@ from datetime import datetime
 from .MailAttacker import MailAttacker, RedisQMailAttacker
 from .MailVictim import MailVictim, RedisQVictim
 from dateutil.parser import parse as dtparse
-from core.models.BaseModel import BaseModel
+from InsightCore.models.BaseModel import BaseModel
 
 
 @dataclass

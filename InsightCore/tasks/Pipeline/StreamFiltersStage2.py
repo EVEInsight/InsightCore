@@ -1,5 +1,5 @@
-from core.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
-from core.models.Mail.Mail import Mail
+from InsightCore.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
+from InsightCore.models.Mail.Mail import Mail
 
 
 class StreamFiltersStage2(InsightCoreTask):

@@ -1,25 +1,25 @@
 from dataclasses import dataclass
-from core.models.BaseModel import BaseModel
+from InsightCore.models.BaseModel import BaseModel
 
 
 @dataclass
-class MailAttacker(BaseModel):
+class MailVictim(BaseModel):
     """
-    mail attacker representing data for Insight parsed from ZK json and additional attributes resolved through ESI
+    mail victim representing data for Insight parsed from ZK json and additional attributes resolved through ESI
     """
     # directly resolved through zk mail json - required
-
-    damage_done: int
-    final_blow: bool
-    security_status: float
+    damage_taken: int
+    ship_type_id: int
 
     # directly resolved through zk mail json - optional
     alliance_id: int = None
     character_id: int = None
     corporation_id: int = None
     faction_id: int = None
-    ship_type_id: int = None
-    weapon_type_id: int = None
+    # items: list[MailItem] = field(default_factory=list) # todo add items
+    position_x: float = None
+    position_y: float = None
+    position_z: float = None
 
     # unresolved entity names requiring api call
     _alliance_name: str = None
@@ -34,14 +34,6 @@ class MailAttacker(BaseModel):
     _ship_category_id: int = None
     _ship_category_name: str = None
     _ship_adjusted_price: float = None
-
-    # unresolved ship weapon type info requiring api call
-    _weapon_type_name: str = None
-    _weapon_group_id: int = None
-    _weapon_group_name: str = None
-    _weapon_category_id: int = None
-    _weapon_category_name: str = None
-    _weapon_adjusted_price: float = None
 
     @property
     def affiliation_name(self):
@@ -156,86 +148,27 @@ class MailAttacker(BaseModel):
     def ship_adjusted_price(self, esi: list):
         """Set through ESI prices list call.
 
-        :param esi: ESI response list. ESI may return this value.
+        :param esi: ESI response list. ESI is required to return this value.
         """
         for t in esi:
             if t.get("type_id") == self.ship_type_id:
                 self._ship_adjusted_price = t.get("adjusted_price")
 
-    @property
-    def weapon_type_name(self):
-        return self._weapon_type_name
-
-    @weapon_type_name.setter
-    def weapon_type_name(self, esi: dict):
-        self._weapon_type_name = esi["name"]
-
-    @property
-    def weapon_group_id(self):
-        return self._weapon_group_id
-
-    @weapon_group_id.setter
-    def weapon_group_id(self, esi: dict):
-        self._weapon_group_id = esi["group_id"]
-
-    @property
-    def weapon_group_name(self):
-        return self._weapon_group_name
-
-    @weapon_group_name.setter
-    def weapon_group_name(self, esi: dict):
-        self._weapon_group_name = esi["name"]
-
-    @property
-    def weapon_category_id(self):
-        return self._weapon_category_id
-
-    @weapon_category_id.setter
-    def weapon_category_id(self, esi: dict):
-        self._weapon_category_id = esi["category_id"]
-
-    @property
-    def weapon_category_name(self):
-        return self._weapon_category_name
-
-    @weapon_category_name.setter
-    def weapon_category_name(self, esi: dict):
-        self._weapon_category_name = esi["name"]
-
-    @property
-    def weapon_adjusted_price(self):
-        """Set through ESI prices list call.
-
-        :return: Adjusted price if available else returns 0
-        :rtype: float
-        """
-        return self._weapon_adjusted_price if self._weapon_adjusted_price is not None else 0
-
-    @weapon_adjusted_price.setter
-    def weapon_adjusted_price(self, esi: list):
-        """Set through ESI prices list call.
-
-        :param esi: ESI response list. ESI may return this value.
-        """
-        for t in esi:
-            if t.get("type_id") == self.weapon_type_id:
-                self._weapon_adjusted_price = t.get("adjusted_price")
-
 
 @dataclass
-class RedisQMailAttacker(MailAttacker):
+class RedisQVictim(MailVictim):
     @classmethod
     def from_json(cls, dct: dict):
         d = dct
         d = {
-            "damage_done":      d["damage_done"],
-            "final_blow":       d["final_blow"],
-            "security_status":  d["security_status"],
+            "damage_taken":     d["damage_taken"],
             "alliance_id":      d.get("alliance_id"),
             "character_id":     d.get("character_id"),
             "corporation_id":   d.get("corporation_id"),
             "faction_id":       d.get("faction_id"),
             "ship_type_id":     d.get("ship_type_id"),
-            "weapon_type_id":   d.get("weapon_type_id")
+            "position_x":       d.get("position", {}).get("x"),
+            "position_y":       d.get("position", {}).get("y"),
+            "position_z":       d.get("position", {}).get("z"),
         }
         return super().from_json(d)

@@ -1,5 +1,5 @@
-from core.models.Mail.Mail import RedisQMail
-from core.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
+from InsightCore.models.Mail.Mail import RedisQMail
+from InsightCore.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
 from ESICelery.tasks.Alliance import *
 from ESICelery.tasks.Character import *
 from ESICelery.tasks.Corporation import *

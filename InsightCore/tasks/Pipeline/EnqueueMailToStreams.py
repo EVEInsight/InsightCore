@@ -1,7 +1,7 @@
-from core.models.Stream.Stream import Stream
-from core.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
+from InsightCore.models.Stream.Stream import Stream
+from InsightCore.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
 from pymongo.collection import Collection
-from core.tasks.pipeline.StreamFiltersStage1 import StreamFiltersStage1
+from InsightCore.tasks.Pipeline.StreamFiltersStage1 import StreamFiltersStage1
 
 
 class EnqueueMailToStreams(InsightCoreTask):

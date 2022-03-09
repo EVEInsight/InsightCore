@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict, fields
-from core.models.BaseModel import BaseModel
+from InsightCore.models.BaseModel import BaseModel
 from .Config import Config
 from .Filter import Filter
 from pymongo.collection import ObjectId

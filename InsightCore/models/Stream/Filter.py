@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from core.models.BaseModel import BaseModel
+from InsightCore.models.BaseModel import BaseModel
 
 
 @dataclass

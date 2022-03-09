@@ -1,8 +1,8 @@
-from core.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
+from InsightCore.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
 from .StreamFiltersStage2 import StreamFiltersStage2
 from datetime import datetime
-from core.models.Mail.Mail import Mail
-from core.models.Stream.Stream import Stream
+from InsightCore.models.Mail.Mail import Mail
+from InsightCore.models.Stream.Stream import Stream
 
 
 class StreamFiltersStage1(InsightCoreTask):
