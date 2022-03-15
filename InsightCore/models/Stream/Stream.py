@@ -1,15 +1,15 @@
-from dataclasses import dataclass, asdict, fields
+from dataclasses import dataclass, field, asdict
 from InsightCore.models.BaseModel import BaseModel
-from .Config import Config
 from .Filter import Filter
-from pymongo.collection import ObjectId
+from .PostConfig import DiscordPostConfig
 
 
 @dataclass
 class Stream(BaseModel):
-    config: Config
     filter: Filter
     id: str = None
+
+    discord_post_configs: list[DiscordPostConfig] = field(default_factory=list)
 
     @classmethod
     def from_json(cls, dct: dict):
@@ -23,8 +23,10 @@ class Stream(BaseModel):
         s = super().from_json(dct)
         if stream_id is not None:
             s.id = str(stream_id)
-        s.config = Config.from_json(dct["config"])
         s.filter = Filter.from_json(dct["filter"])
+        s.discord_post_configs = []
+        for p in dct.get("discord_post_configs"):
+            s.discord_post_configs.append(DiscordPostConfig.from_json(p))
         return s
 
     def to_mongodb_json(self) -> dict:
@@ -35,5 +37,3 @@ class Stream(BaseModel):
         d = self.to_json()
         d.pop("id", None)
         return d
-
-

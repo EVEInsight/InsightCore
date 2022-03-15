@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from InsightCore.models.BaseModel import BaseModel
+from .Systems import SystemRangeGate, SystemRangeLightyear
 
 
 @dataclass
@@ -84,10 +85,26 @@ class Filter(BaseModel):
     system_min_security_status: float = float("-inf")
     system_max_security_status: float = float("inf")
     system_ids_include: list[int] = field(default_factory=lambda: ["*"])
-    system_ranges_gate_include: list[int] = field(default_factory=list)
-    system_ranges_lightyear_include: list[int] = field(default_factory=list)
+    system_ranges_gate_include: list[SystemRangeGate] = field(default_factory=list)
+    system_ranges_lightyear_include: list[SystemRangeLightyear] = field(default_factory=list)
     system_ids_exclude: list[int] = field(default_factory=list)
 
     location_ids_include: list[int] = field(default_factory=lambda: ["*"])
     location_ids_exclude: list[int] = field(default_factory=list)
 
+    @classmethod
+    def from_json(cls, dct: dict):
+        """Returns an instance of class from a json dictionary
+
+        :param dct: Dictionary returned from the to_json() method
+        :return: An instance of the class
+        :rtype: Stream
+        """
+        s = super().from_json(dct)
+        s.system_ranges_gate_include = []
+        for system in dct.get("system_ranges_gate_include"):
+            s.system_ranges_gate_include.append(SystemRangeGate.from_json(system))
+        s.system_ranges_lightyear_include = []
+        for system in dct.get("system_ranges_lightyear_include"):
+            s.system_ranges_lightyear_include.append(SystemRangeLightyear.from_json(system))
+        return s
