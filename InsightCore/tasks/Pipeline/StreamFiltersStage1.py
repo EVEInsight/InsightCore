@@ -3,6 +3,8 @@ from .StreamFiltersStage2 import StreamFiltersStage2
 from datetime import datetime
 from InsightCore.models.Mail.Mail import Mail
 from InsightCore.models.Stream.Stream import Stream
+from ESICelery.tasks.Routes import Route
+from ESICelery.tasks.Universe import SystemInfo
 
 
 class StreamFiltersStage1(InsightCoreTask):
@@ -105,6 +107,11 @@ class StreamFiltersStage1(InsightCoreTask):
             return
         if m.system_id in f.system_ids_exclude:
             return
+
+        for system_gate in f.system_ranges_gate_include:
+            Route().get_async(ignore_result=True, origin=system_gate.system_id, destinatio=m.system_id)
+        for system_lightyear in f.system_ranges_lightyear_include:
+            SystemInfo().get_async(ignore_result=True, system_id=system_lightyear.system_id)
 
         StreamFiltersStage2().apply_async(kwargs={"mail_json": mail_json, "stream_json": stream_json},
                                           ignore_result=True)
