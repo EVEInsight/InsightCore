@@ -38,7 +38,6 @@ class ProcessMailEnqueueESICalls(InsightCoreTask):
                 FactionsList().get_async(ignore_result=True)
             if m.victim.ship_type_id:
                 TypeInfo().get_async(ignore_result=True, type_id=m.victim.ship_type_id)
-                PricesList().get_async(ignore_result=True)
 
         for a in m.attackers:
             if a.character_id:
@@ -51,7 +50,7 @@ class ProcessMailEnqueueESICalls(InsightCoreTask):
                 FactionsList().get_async(ignore_result=True)
             if a.ship_type_id:
                 TypeInfo().get_async(ignore_result=True, type_id=a.ship_type_id)
-                PricesList().get_async(ignore_result=True)
             if a.weapon_type_id:
                 TypeInfo().get_async(ignore_result=True, type_id=a.weapon_type_id)
-                PricesList().get_async(ignore_result=True)
+
+        PricesList().get_async(ignore_result=True)

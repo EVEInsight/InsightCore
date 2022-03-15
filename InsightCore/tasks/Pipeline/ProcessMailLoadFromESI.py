@@ -27,6 +27,8 @@ class ProcessMailLoadFromESI(InsightCoreTask):
         """
         m = Mail.from_json(RedisQMail.from_json(mail_json).to_json())
 
+        price_list = PricesList().get_cached()
+
         if m.system_id:
             esi = SystemInfo().get_cached(system_id=m.system_id)
             m.system_name = esi
@@ -63,7 +65,7 @@ class ProcessMailLoadFromESI(InsightCoreTask):
                 m.victim.ship_category_id = esi
                 esi = CategoryInfo().get_cached(category_id=m.victim.ship_category_id)
                 m.victim.ship_category_name = esi
-                esi = PricesList().get_cached()
+                esi = price_list
                 m.victim.ship_adjusted_price = esi
 
         for a in m.attackers:
@@ -88,7 +90,7 @@ class ProcessMailLoadFromESI(InsightCoreTask):
                 a.ship_category_id = esi
                 esi = CategoryInfo().get_cached(category_id=a.ship_category_id)
                 a.ship_category_name = esi
-                esi = PricesList().get_cached()
+                esi = price_list
                 a.ship_adjusted_price = esi
             if a.weapon_type_id:
                 esi = TypeInfo().get_cached(type_id=a.weapon_type_id)
@@ -99,7 +101,7 @@ class ProcessMailLoadFromESI(InsightCoreTask):
                 a.weapon_category_id = esi
                 esi = CategoryInfo().get_cached(category_id=a.weapon_category_id)
                 a.weapon_category_name = esi
-                esi = PricesList().get_cached()
+                esi = price_list
                 a.weapon_adjusted_price = esi
 
         EnqueueMailToStreams().apply_async(kwargs={"mail_json": m.to_json()}, ignore_result=True)
