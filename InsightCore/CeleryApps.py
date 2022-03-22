@@ -12,7 +12,7 @@ class InsightCoreWorker(CeleryWorker):
         yield EnqueueMailToStreams(), "PipelineEnqueueMailToStreams"
         yield StreamFiltersStage1(), "PipelineStreamFiltersStage1"
         yield StreamFiltersStage2(), "PipelineStreamFiltersStage2"
-        yield CreateStream(), "ApiCreateStream"
+        yield CreateModifyStream(), "ApiCreateModifyStream"
 
 
 class InsightCoreBeat(CeleryBeat):

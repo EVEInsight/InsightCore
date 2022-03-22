@@ -7,7 +7,7 @@ from InsightCore.tasks.Pipeline.StreamFiltersStage1 import StreamFiltersStage1
 class EnqueueMailToStreams(InsightCoreTask):
     autoretry_for = (Exception,)
     max_retries = 5
-    retry_backoff = 3
+    retry_backoff = 60
     retry_backoff_max = 600
     retry_jitter = False
 
@@ -20,7 +20,7 @@ class EnqueueMailToStreams(InsightCoreTask):
         :rtype: None
         """
         streams: Collection = self.db.streams
-        for s in streams.find({"config.running": True}):
+        for s in streams.find({"post.running": True}):
             stream = Stream.from_json(s)
             stream_json = stream.to_json()
             StreamFiltersStage1().apply_async(kwargs={"mail_json": mail_json, "stream_json": stream_json},

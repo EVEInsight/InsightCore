@@ -1,4 +1,4 @@
 from .Filter import Filter
-from .PostConfig import DiscordPostConfig
+from .Post import DiscordPost
 from .Stream import Stream
 from .Systems import SystemRangeGate, SystemRangeLightyear

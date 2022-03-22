@@ -1,15 +1,13 @@
 from dataclasses import dataclass, field, asdict
 from InsightCore.models.BaseModel import BaseModel
 from .Filter import Filter
-from .PostConfig import DiscordPostConfig
+from .Post import Post, DiscordPost
 
 
 @dataclass
 class Stream(BaseModel):
     filter: Filter
-    id: str = None
-
-    discord_post_configs: list[DiscordPostConfig] = field(default_factory=list)
+    post: Post
 
     @classmethod
     def from_json(cls, dct: dict):
@@ -19,21 +17,12 @@ class Stream(BaseModel):
         :return: An instance of the class
         :rtype: Stream
         """
-        stream_id = dct.pop("_id", None)
         s = super().from_json(dct)
-        if stream_id is not None:
-            s.id = str(stream_id)
         s.filter = Filter.from_json(dct["filter"])
-        s.discord_post_configs = []
-        for p in dct.get("discord_post_configs"):
-            s.discord_post_configs.append(DiscordPostConfig.from_json(p))
+        post_type = dct["post"]["type"]
+        if post_type == "discord":
+            s.post = DiscordPost.from_json(dct["post"])
+        else:
+            raise ValueError("Unexpected post type")
         return s
 
-    def to_mongodb_json(self) -> dict:
-        """Returns a json dictionary with ID removed for inserts / updates into mongodb.
-
-        :return: Instance with id field removed.
-        """
-        d = self.to_json()
-        d.pop("id", None)
-        return d
