@@ -85,8 +85,8 @@ class StreamFiltersStage1(InsightCoreTask):
             return
         if not self.filter(f.victim_faction_ids_include, f.victim_faction_ids_exclude, m.victim.faction_id):
             return
-        if not self.passes_filter(f.victim_ship_category_ids_include, f.victim_ship_category_ids_exclude,
-                                  m.victim.ship_category_id):
+        if not self.filter(f.victim_ship_category_ids_include, f.victim_ship_category_ids_exclude,
+                           m.victim.ship_category_id):
             return
         if not self.filter(f.victim_ship_group_ids_include, f.victim_ship_group_ids_exclude,
                            m.victim.ship_group_id):
@@ -109,7 +109,7 @@ class StreamFiltersStage1(InsightCoreTask):
             return
 
         for system_gate in f.system_ranges_gate_include:
-            Route().get_async(ignore_result=True, origin=system_gate.system_id, destinatio=m.system_id)
+            Route().get_async(ignore_result=True, origin=system_gate.system_id, destination=m.system_id)
         for system_lightyear in f.system_ranges_lightyear_include:
             SystemInfo().get_async(ignore_result=True, system_id=system_lightyear.system_id)
 

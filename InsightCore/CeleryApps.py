@@ -13,6 +13,7 @@ class InsightCoreWorker(CeleryWorker):
         yield StreamFiltersStage1(), "PipelineStreamFiltersStage1"
         yield StreamFiltersStage2(), "PipelineStreamFiltersStage2"
         yield CreateModifyStream(), "ApiCreateModifyStream"
+        yield PostDiscord(), "PipelinePostDiscord"
 
 
 class InsightCoreBeat(CeleryBeat):

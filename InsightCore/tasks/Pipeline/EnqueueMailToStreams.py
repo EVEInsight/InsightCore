@@ -21,6 +21,7 @@ class EnqueueMailToStreams(InsightCoreTask):
         """
         streams: Collection = self.db.streams
         for s in streams.find({"post.running": True}):
+            s.pop("_id")
             stream = Stream.from_json(s)
             stream_json = stream.to_json()
             StreamFiltersStage1().apply_async(kwargs={"mail_json": mail_json, "stream_json": stream_json},
