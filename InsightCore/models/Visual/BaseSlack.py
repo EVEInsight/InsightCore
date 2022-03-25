@@ -3,12 +3,12 @@ from .BaseVisual import BaseVisual
 
 
 @dataclass
-class BaseDiscord(BaseVisual):
+class BaseSlack(BaseVisual):
     content: str = ""
 
     @classmethod
     def get_visual_type(cls):
-        return "discord"
+        return "slack"
 
     def get_payload(self) -> dict:
         self.generate_payload()
