@@ -1,10 +1,14 @@
 from dataclasses import dataclass
-from .BasePostContent import BasePostContent
+from .BaseVisual import BaseVisual
 
 
 @dataclass
-class BaseDiscord(BasePostContent):
+class BaseDiscord(BaseVisual):
     content: str = ""
+
+    @classmethod
+    def get_visual_type(cls):
+        return "discord"
 
     def generate_payload(self):
         raise NotImplementedError

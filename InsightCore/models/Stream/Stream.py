@@ -19,7 +19,7 @@ class Stream(BaseModel):
         """
         s = super().from_json(dct)
         s.filter = Filter.from_json(dct["filter"])
-        post_type = dct["post"]["type"]
+        post_type = dct["post"]["visual_type"]
         if post_type == "discord":
             s.post = DiscordPost.from_json(dct["post"])
         else:

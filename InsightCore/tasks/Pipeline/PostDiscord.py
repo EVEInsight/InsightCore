@@ -1,5 +1,5 @@
 from InsightCore.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
-from InsightCore.models.PostContent import DiscordText
+from InsightCore.models.Visual import BaseDiscord
 import requests
 from ESICelery.utils.RequestHeaders import RequestHeaders
 
@@ -12,7 +12,7 @@ class PostDiscord(InsightCoreTask):
     retry_jitter = False
 
     def run(self, post_json) -> None:
-        p = DiscordText.from_json(post_json)
+        p = BaseDiscord.from_json_subclass(post_json)
         try:
             resp = requests.post(url=p.stream.post.url, data=p.get_payload(), headers=RequestHeaders.get_headers(),
                                  timeout=15, verify=True)

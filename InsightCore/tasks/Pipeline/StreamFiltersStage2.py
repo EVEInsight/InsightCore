@@ -1,7 +1,7 @@
 from InsightCore.tasks.BaseTasks.InsightCoreTask import InsightCoreTask
 from InsightCore.models.Mail import Mail
 from InsightCore.models.Stream import Stream
-from InsightCore.models.PostContent import DiscordText
+from InsightCore.models.Visual import BaseVisual
 from .PostDiscord import PostDiscord
 
 
@@ -16,5 +16,6 @@ class StreamFiltersStage2(InsightCoreTask):
         # todo docs and system filters
         m = Mail.from_json(mail_json)
         s = Stream.from_json(stream_json)
-        p = DiscordText(mail=m, stream=s)
+        post_cls = BaseVisual.get_cls(visual_type=s.post.visual_type, visual_id=s.post.visual_id)
+        p = post_cls(mail=m, stream=s, visual_type=s.post.visual_type, visual_id=s.post.visual_id)
         PostDiscord().apply_async(kwargs={"post_json": p.to_json()}, ignore_result=True)
