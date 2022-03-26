@@ -13,8 +13,8 @@ class Post(BaseModel):
 @dataclass
 class DiscordPost(Post):
     visual_type: str = "discord"
-    color_kill: int = 16711680
-    color_loss: int = 65299
+    color_kill: int = 65299
+    color_loss: int = 16711680
     color_time_60s: int = 12124259
     color_time_300s: int = 8454210
     color_time_else: int = 4128800

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from InsightCore.models.BaseModel import BaseModel
+from InsightCore.utils import Links
 
 
 @dataclass
@@ -53,6 +54,23 @@ class MailVictim(BaseModel):
             return None
 
     @property
+    def affiliation_logo(self):
+        """Returns the URL of the logo belonging to the largest affiliation the entity belongs to.
+        Ordering - whichever id is set first: faction > alliance > corporation
+
+        :return: Logo URL for largest affiliation the entity belongs or an empty string for no affiliation logo
+        :rtype: str
+        """
+        if self.faction_id:
+            return Links.faction_logo_64(self.faction_id)
+        elif self.alliance_id:
+            return Links.alliance_logo_64(self.alliance_id)
+        elif self.corporation_id:
+            return Links.corporation_logo_64(self.corporation_id)
+        else:
+            return ""
+
+    @property
     def alliance_name(self):
         return self._alliance_name
 
@@ -67,6 +85,14 @@ class MailVictim(BaseModel):
     @character_name.setter
     def character_name(self, esi: dict):
         self._character_name = esi["name"]
+
+    @property
+    def character_zk_url(self) -> str:
+        """
+
+        :return: ZK url for character profile or an empty string if character_is is None
+        """
+        return Links.zk_character_url(self.character_id) if self.character_id else ""
 
     @property
     def corporation_name(self):

@@ -16,6 +16,7 @@ class BaseVisual(BaseModel):
     filtered_system_name: str = None
     filtered_system_gate_distance: int = None
     filtered_system_lightyear_distance: float = None
+    is_loss: bool = False
 
     @classmethod
     def get_visual_id(cls):

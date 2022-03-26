@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from InsightCore.models.BaseModel import BaseModel
+from InsightCore.utils import Links
 
 
 @dataclass
@@ -75,6 +76,14 @@ class MailAttacker(BaseModel):
     @character_name.setter
     def character_name(self, esi: dict):
         self._character_name = esi["name"]
+
+    @property
+    def character_zk_url(self) -> str:
+        """
+
+        :return: ZK url for character profile or an empty string if character_is is None
+        """
+        return Links.zk_character_url(self.character_id) if self.character_id else ""
 
     @property
     def corporation_name(self):

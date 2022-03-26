@@ -14,9 +14,9 @@ class PostDiscord(InsightCoreTask):
     def run(self, post_json) -> None:
         p = BaseDiscord.from_json_subclass(post_json)
         try:
-            resp = requests.post(url=p.stream.post.url, data=p.get_payload(), headers=RequestHeaders.get_headers(),
+            resp = requests.post(url=p.stream.post.url, json=p.get_payload(), headers=RequestHeaders.get_headers(),
                                  timeout=15, verify=True)
-            if resp.status_code == 200:
+            if 200 <= resp.status_code < 300:
                 return
             elif resp.status_code in [401, 403, 404]:
                 pass  # delete feed

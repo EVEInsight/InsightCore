@@ -13,5 +13,5 @@ class BaseSlack(BaseVisual):
     def get_payload(self) -> dict:
         self.generate_payload()
         return {
-            "content": self.content
+            "embed": self.content
         }

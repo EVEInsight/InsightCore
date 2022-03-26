@@ -1,9 +1,10 @@
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime
 from .MailAttacker import MailAttacker, RedisQMailAttacker
 from .MailVictim import MailVictim, RedisQVictim
 from dateutil.parser import parse as dtparse
 from InsightCore.models.BaseModel import BaseModel
+from InsightCore.utils import Links
 
 
 @dataclass
@@ -226,12 +227,12 @@ class Mail(BaseModel):
         """Dynamically gets the final_blow object
 
         :return: Attacker object with final_blow
-        :rtype: MailAttacker or None
+        :rtype: MailAttacker
         """
         for a in self.attackers:
             if a.final_blow:
                 return a
-        return None
+        return MailAttacker(damage_done=0, final_blow=True, security_status=0)  # edge case when attacker count is 0 so return an empty object
 
     @property
     def sorted_attackers_ship_adjusted_value(self):
@@ -269,6 +270,14 @@ class Mail(BaseModel):
         :rtype: int
         """
         return len(self.attackers)
+
+    @property
+    def zk_url(self) -> str:
+        """
+
+        :return: URL to mail
+        """
+        return Links.mail_zk_url(self.id)
 
 
 @dataclass

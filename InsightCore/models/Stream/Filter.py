@@ -5,6 +5,16 @@ from .Systems import SystemRangeGate, SystemRangeLightyear
 
 @dataclass
 class Filter(BaseModel):
+    """Class for defining stream filter configuration. Mails matching the items in this filter are posted to stream.
+
+
+    :param operator_attacker_victim_and: If True, require a mail to pass both filters for attacker and victim.
+        If one fails the mail is discarded.
+        If False, require a mail to pass at least either the attacker and victim filter.
+        If both fail the mail is discarded.
+
+
+    """
     km_min_fittedValue: float = 0.0
     km_max_fittedValue: float = float("inf")
     km_min_droppedValue: float = 0.0
@@ -20,9 +30,10 @@ class Filter(BaseModel):
     km_require_awox: bool = False
     km_min_age_seconds: int = 0
     km_max_age_seconds: int = float("inf")
+    km_attackers_min: int = 0
+    km_attackers_max: int = float("inf")
 
-    attackers_min: int = 0
-    attackers_max: int = float("inf")
+    attackers_ratio_min: float = 0.0  # ratio of filtered attackers must be greater than this percent
     attacker_min_security_status: float = float("-inf")
     attacker_max_security_status: float = float("inf")
     attacker_min_damage_done: float = 0.0
@@ -55,6 +66,8 @@ class Filter(BaseModel):
     attacker_weapon_group_ids_exclude: list[int] = field(default_factory=list)
     attacker_weapon_type_ids_include: list[int] = field(default_factory=lambda: ["*"])
     attacker_weapon_type_ids_exclude: list[int] = field(default_factory=list)
+
+    operator_attacker_victim_and: bool = True
 
     victim_min_damage_taken: float = 0.0
     victim_max_damage_taken: float = float("inf")
